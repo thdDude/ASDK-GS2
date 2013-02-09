@@ -39,19 +39,10 @@
 /******************** Tunable parameters: ********************/
 
 /*
- * The definition of 'SAMPLING_LATENCY_MULTIPLIER' and 'MIN_TICKS'
- * is now excluded from .config (or <<device>>.defconfig)
- * not to confuse the default governors and cause strange behaviour
- */
-#define CONFIG_CPU_FREQ_SAMPLING_LATENCY_MULTIPLIER		(1000)
-#define CONFIG_CPU_FREQ_MIN_TICKS		(10)
-
-/*
  * The "ideal" frequency to use when awake. The governor will ramp up faster
  * towards the ideal frequency and slower after it has passed it. Similarly,
  * lowering the frequency towards the ideal frequency is faster than below it.
  */
-#define DEFAULT_AWAKE_IDEAL_FREQ 1080000
 #define DEFAULT_AWAKE_IDEAL_FREQ 384000
 static unsigned int awake_ideal_freq;
 
@@ -61,7 +52,6 @@ static unsigned int awake_ideal_freq;
  * that practically when sleep_ideal_freq==0 the awake_ideal_freq is used
  * also when suspended).
  */
-#define DEFAULT_SLEEP_IDEAL_FREQ 192000
 #define DEFAULT_SLEEP_IDEAL_FREQ 384000
 static unsigned int sleep_ideal_freq;
 
@@ -70,16 +60,12 @@ static unsigned int sleep_ideal_freq;
  * Zero disables and causes to always jump straight to max frequency.
  * When below the ideal freqeuncy we always ramp up to the ideal freq.
  */
-#define DEFAULT_RAMP_UP_STEP 256000
 #define DEFAULT_RAMP_UP_STEP 128000
 static unsigned int ramp_up_step;
 
 /*
  * Freqeuncy delta when ramping down below the ideal freqeuncy.
  * Zero disables and will calculate ramp down according to load heuristic.
- * When above the ideal frequency we always ramp down to the ideal freq.
- */
-#define DEFAULT_RAMP_DOWN_STEP 216000
  * When above the ideal freqeuncy we always ramp down to the ideal freq.
  */
 #define DEFAULT_RAMP_DOWN_STEP 256000
@@ -88,14 +74,12 @@ static unsigned int ramp_down_step;
 /*
  * CPU freq will be increased if measured load > max_cpu_load;
  */
-#define DEFAULT_MAX_CPU_LOAD 80 //50
 #define DEFAULT_MAX_CPU_LOAD 75
 static unsigned long max_cpu_load;
 
 /*
  * CPU freq will be decreased if measured load < min_cpu_load;
  */
-#define DEFAULT_MIN_CPU_LOAD 35 //25
 #define DEFAULT_MIN_CPU_LOAD 35
 static unsigned long min_cpu_load;
 
@@ -117,7 +101,6 @@ static unsigned long down_rate_us;
  * The frequency to set when waking up from sleep.
  * When sleep_ideal_freq=0 this will have no effect.
  */
-#define DEFAULT_SLEEP_WAKEUP_FREQ 99999999
 #define DEFAULT_SLEEP_WAKEUP_FREQ 1188000
 static unsigned int sleep_wakeup_freq;
 
@@ -184,7 +167,6 @@ static
 struct cpufreq_governor cpufreq_gov_smartass2 = {
 	.name = "smartassV2",
 	.governor = cpufreq_governor_smartass,
-	.max_transition_latency = 9000000, //9000000
 	.max_transition_latency = 9000000,
 	.owner = THIS_MODULE,
 };
@@ -688,7 +670,6 @@ static struct attribute * smartass_attributes[] = {
 
 static struct attribute_group smartass_attr_group = {
 	.attrs = smartass_attributes,
-	.name = "smartass",
 	.name = "smartassV2",
 };
 
