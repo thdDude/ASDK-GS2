@@ -675,10 +675,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
 		}
 
 		mutex_unlock(&dbs_mutex);
-<<<<<<< HEAD
 
-=======
->>>>>>> 0cf995a... Modified a few governors
 		unregister_early_suspend(&lagfree_power_suspend);
 		break;
 

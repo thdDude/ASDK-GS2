@@ -534,10 +534,7 @@ static struct attribute_group dbs_attr_group = {
     .name = "lazy",
 };
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 0cf995a... Modified a few governors
 /************************** sysfs end ************************/
 
 static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)

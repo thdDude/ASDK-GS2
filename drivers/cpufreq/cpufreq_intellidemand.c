@@ -187,10 +187,7 @@ static inline cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall)
 		return get_cpu_idle_time_jiffy(cpu, wall);
 	else
 		idle_time += get_cpu_iowait_time_us(cpu, wall);
-<<<<<<< HEAD
 
-=======
->>>>>>> 0cf995a... Modified a few governors
 	return idle_time;
 }
 
@@ -537,10 +534,7 @@ static ssize_t store_ignore_nice_load(struct kobject *a, struct attribute *b,
 						&dbs_info->prev_cpu_wall);
 		if (dbs_tuners_ins.ignore_nice)
 			dbs_info->prev_cpu_nice = kstat_cpu(j).cpustat.nice;
-<<<<<<< HEAD
 
-=======
->>>>>>> 0cf995a... Modified a few governors
 	}
 	return count;
 }

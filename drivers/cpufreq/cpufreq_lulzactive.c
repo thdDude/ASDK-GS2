@@ -38,10 +38,7 @@
 
 // if you changed some codes for optimization, just write your name here.
 #define LULZACTIVE_TUNER "siyah"
-<<<<<<< HEAD
 
-=======
->>>>>>> 0cf995a... Modified a few governors
 #define LOGI(fmt...) printk(KERN_INFO "[lulzactive] " fmt)
 #define LOGW(fmt...) printk(KERN_WARNING "[lulzactive] " fmt)
 #define LOGD(fmt...) printk(KERN_DEBUG "[lulzactive] " fmt)
@@ -91,10 +88,7 @@ static unsigned long up_sample_time;
 static unsigned long down_sample_time;
 
 /*
-<<<<<<< HEAD
 
-=======
->>>>>>> 0cf995a... Modified a few governors
 /*
  * The minimum amount of time to spend at a frequency before we can ramp up.
  */
@@ -149,10 +143,7 @@ static unsigned long ramp_up_step;
 static unsigned long pump_down_step;
 #define DEFAULT_RAMP_DOWN_STEP 1
 static unsigned long ramp_down_step;
-<<<<<<< HEAD
 
-=======
->>>>>>> 0cf995a... Modified a few governors
 /*
  * Use minimum frequency while suspended.
  */
@@ -351,10 +342,7 @@ static void cpufreq_lulzactive_timer(unsigned long data)
 	int ret;
 	static unsigned int stuck_on_sampling = 0;
 	static unsigned int cpu_load_captured = 0;
-<<<<<<< HEAD
 
-=======
->>>>>>> 0cf995a... Modified a few governors
 	/*
 	 * Once pcpu->timer_run_time is updated to >= pcpu->idle_exit_time,
 	 * this lets idle exit know the current idle time sample has
@@ -1511,10 +1499,7 @@ static int __init cpufreq_lulzactive_init(void)
 	early_suspended = 0;
 	suspending = 0;
 	suspending_min_freq = DEFAULT_SUSPENDING_MIN_FREQ;
-<<<<<<< HEAD
 
-=======
->>>>>>> 0cf995a... Modified a few governors
 	/* Initalize per-cpu timers */
 	for_each_possible_cpu(i) {
 		pcpu = &per_cpu(cpuinfo, i);
@@ -1586,8 +1571,5 @@ module_exit(cpufreq_lulzactive_exit);
 MODULE_AUTHOR("Tegrak <luciferanna@gmail.com>");
 MODULE_DESCRIPTION("'lulzactive' - improved interactive governor inspired by smartass");
 MODULE_LICENSE("GPL");
-<<<<<<< HEAD
 
 
-=======
->>>>>>> 0cf995a... Modified a few governors
