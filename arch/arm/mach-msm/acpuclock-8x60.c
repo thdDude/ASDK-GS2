@@ -49,7 +49,7 @@
 
 
 #define MAX_VDD_SC		1400000 /* uV */
-#define MIN_VDD_SC      700000 /* uV */
+#define MIN_VDD_SC      	700000 /* uV */
 #define MAX_VDD_MEM		1400000 /* uV */
 #define MAX_VDD_DIG		1400000 /* uV */
 #define MAX_AXI			 310500 /* KHz */
@@ -58,7 +58,7 @@
 #define SCPLL_NOMINAL_VDD	1100000 /* uV */
 
 #define MAX_FREQ_X		1944000
-#define MIN_FREQ_X		192000
+#define MIN_FREQ_X		384000
 #define MAX_BOOT_X		1512000
 
 /* SCPLL Modes. */
