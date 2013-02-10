@@ -59,7 +59,7 @@
 
 #define MAX_FREQ_X		1944000
 #define MIN_FREQ_X		384000
-#define MAX_BOOT_X		1512000
+#define MAX_BOOT_X		1566000 /*super fast mode*/
 
 /* SCPLL Modes. */
 #define SCPLL_POWER_DOWN	0
