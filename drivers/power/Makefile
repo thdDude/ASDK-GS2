@@ -55,4 +55,6 @@ obj-$(CONFIG_BATTERY_P5LTE)	+= p5-lte_battery.o
 obj-$(CONFIG_BATTERY_P8LTE)	+= p8-lte_battery.o
 else
 obj-$(CONFIG_BATTERY_SEC)	+= sec_battery.o
+obj-$(CONFIG_BATTERY_SEC_U1)	+= sec_battery_u1.o charge_current.o
+obj-$(CONFIG_BATTERY_MAX17042_FUELGAUGE_U1)	+= max17042_fuelgauge_u1.o
 endif
