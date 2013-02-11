@@ -15,6 +15,7 @@
 #include <mach/msm_iomap.h>
 #include <mach/msm_bus.h>
 #include <linux/ktime.h>
+#include <linux/cpufreq.h>
 
 #include "kgsl.h"
 #include "kgsl_pwrscale.h"
@@ -352,9 +353,9 @@ DEVICE_ATTR(max_gpuclk, 0644, kgsl_pwrctrl_max_gpuclk_show,
 DEVICE_ATTR(pwrnap, 0664, kgsl_pwrctrl_pwrnap_show, kgsl_pwrctrl_pwrnap_store);
 DEVICE_ATTR(idle_timer, 0644, kgsl_pwrctrl_idle_timer_show,
 	kgsl_pwrctrl_idle_timer_store);
-DEVICE_ATTR(gpubusy, 0444, kgsl_pwrctrl_gpubusy_show,
+DEVICE_ATTR(gpubusy, 0644, kgsl_pwrctrl_gpubusy_show,
 	NULL);
-DEVICE_ATTR(gputop, 0444, kgsl_pwrctrl_gputop_show,
+DEVICE_ATTR(gputop, 0644, kgsl_pwrctrl_gputop_show,
 	NULL);
 
 static const struct device_attribute *pwrctrl_attr_list[] = {
@@ -576,6 +577,7 @@ int kgsl_pwrctrl_init(struct kgsl_device *device)
 	pwr->num_pwrlevels = pdata->num_levels;
 	pwr->active_pwrlevel = pdata->init_level;
 	pwr->default_pwrlevel = pdata->init_level;
+	pwr->thermal_pwrlevel = pdata->max_level;
 	for (i = 0; i < pdata->num_levels; i++) {
 		pwr->pwrlevels[i].gpu_freq =
 		(pdata->pwrlevel[i].gpu_freq > 0) ?

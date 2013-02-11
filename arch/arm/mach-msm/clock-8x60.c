@@ -2374,6 +2374,7 @@ static struct clk_freq_tbl clk_tbl_gfx3d[] = {
 	F_GFX3D(200000000, pll2, 1,  4),
 	F_GFX3D(228571000, pll2, 2,  7),
 	F_GFX3D(266667000, pll2, 1,  3),
+	F_GFX3D(300000000, pll2, 3,  8),
 	F_GFX3D(320000000, pll2, 2,  5),
 	F_END
 };
@@ -2995,7 +2996,6 @@ static struct clk_freq_tbl clk_tbl_vfe[] = {
 	F_VFE(153600000, pll8,  1, 2,  5),
 	F_VFE(200000000, pll2,  2, 1,  2),
 	F_VFE(228570000, pll2,  1, 2,  7),
-	F_VFE(266667000, pll2,  1, 1,  3),
 	F_END
 };
 
@@ -3020,7 +3020,7 @@ static struct rcg_clk vfe_clk = {
 		.dbg_name = "vfe_clk",
 		.ops = &clk_ops_rcg_8x60,
 		VDD_DIG_FMAX_MAP3(LOW,  110000000, NOMINAL, 228570000,
-				  HIGH, 266667000),
+				  HIGH, 228571000),
 		CLK_INIT(vfe_clk.c),
 		.depends = &vfe_axi_clk.c,
 	},

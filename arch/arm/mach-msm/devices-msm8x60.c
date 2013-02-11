@@ -621,7 +621,7 @@ static struct msm_bus_vectors grp3d_nominal_high_vectors[] = {
 		.src = MSM_BUS_MASTER_GRAPHICS_3D,
 		.dst = MSM_BUS_SLAVE_EBI_CH0,
 		.ab = 0,
-		.ib = KGSL_CONVERT_TO_MBPS(2008),
+		.ib = KGSL_CONVERT_TO_MBPS(2484),
 	},
 };
 
@@ -630,7 +630,7 @@ static struct msm_bus_vectors grp3d_max_vectors[] = {
 		.src = MSM_BUS_MASTER_GRAPHICS_3D,
 		.dst = MSM_BUS_SLAVE_EBI_CH0,
 		.ab = 0,
-		.ib = KGSL_CONVERT_TO_MBPS(2484),
+		.ib = KGSL_CONVERT_TO_MBPS(2976),
 	},
 };
 
@@ -672,24 +672,53 @@ static struct msm_bus_vectors grp2d0_init_vectors[] = {
 	},
 };
 
+static struct msm_bus_vectors grp2d0_low_vectors[] = {
+	{
+		.src = MSM_BUS_MASTER_GRAPHICS_2D_CORE0,
+		.dst = MSM_BUS_SLAVE_EBI_CH0,
+		.ab = 0,
+		.ib = KGSL_CONVERT_TO_MBPS(990)
+	},
+};
+
+static struct msm_bus_vectors grp2d0_nominal_vectors[] = {
+	{
+		.src = MSM_BUS_MASTER_GRAPHICS_2D_CORE0,
+		.dst = MSM_BUS_SLAVE_EBI_CH0,
+		.ab = 0,
+		.ib = KGSL_CONVERT_TO_MBPS(1638)
+	},
+};
+
+/*
 static struct msm_bus_vectors grp2d0_max_vectors[] = {
 	{
 		.src = MSM_BUS_MASTER_GRAPHICS_2D_CORE0,
 		.dst = MSM_BUS_SLAVE_EBI_CH0,
 		.ab = 0,
-		.ib = KGSL_CONVERT_TO_MBPS(990),
+		.ib = KGSL_CONVERT_TO_MBPS(2048),
 	},
 };
-
+*/
 static struct msm_bus_paths grp2d0_bus_scale_usecases[] = {
 	{
 		ARRAY_SIZE(grp2d0_init_vectors),
 		grp2d0_init_vectors,
 	},
 	{
+		ARRAY_SIZE(grp2d0_low_vectors),
+		grp2d0_low_vectors,
+	},
+	{
+		ARRAY_SIZE(grp2d0_nominal_vectors),
+		grp2d0_nominal_vectors,
+	},
+/*
+	{
 		ARRAY_SIZE(grp2d0_max_vectors),
 		grp2d0_max_vectors,
 	},
+*/
 };
 
 static struct msm_bus_scale_pdata grp2d0_bus_scale_pdata = {
@@ -707,12 +736,30 @@ static struct msm_bus_vectors grp2d1_init_vectors[] = {
 	},
 };
 
+static struct msm_bus_vectors grp2d1_low_vectors[] = {
+	{
+		.src = MSM_BUS_MASTER_GRAPHICS_2D_CORE1,
+		.dst = MSM_BUS_SLAVE_EBI_CH0,
+		.ab = 0,
+		.ib = KGSL_CONVERT_TO_MBPS(990)
+	},
+};
+
+static struct msm_bus_vectors grp2d1_nominal_vectors[] = {
+	{
+		.src = MSM_BUS_MASTER_GRAPHICS_2D_CORE1,
+		.dst = MSM_BUS_SLAVE_EBI_CH0,
+		.ab = 0,
+		.ib = KGSL_CONVERT_TO_MBPS(1638)
+	},
+};
+
 static struct msm_bus_vectors grp2d1_max_vectors[] = {
 	{
 		.src = MSM_BUS_MASTER_GRAPHICS_2D_CORE1,
 		.dst = MSM_BUS_SLAVE_EBI_CH0,
 		.ab = 0,
-		.ib = KGSL_CONVERT_TO_MBPS(990),
+		.ib = KGSL_CONVERT_TO_MBPS(2048),
 	},
 };
 
@@ -720,6 +767,14 @@ static struct msm_bus_paths grp2d1_bus_scale_usecases[] = {
 	{
 		ARRAY_SIZE(grp2d1_init_vectors),
 		grp2d1_init_vectors,
+	},
+	{
+		ARRAY_SIZE(grp2d1_low_vectors),
+		grp2d1_low_vectors,
+	},
+	{
+		ARRAY_SIZE(grp2d1_nominal_vectors),
+		grp2d1_nominal_vectors,
 	},
 	{
 		ARRAY_SIZE(grp2d1_max_vectors),
@@ -767,6 +822,11 @@ static struct resource kgsl_3d0_resources[] = {
 static struct kgsl_device_platform_data kgsl_3d0_pdata = {
 	.pwrlevel = {
 		{
+			.gpu_freq = 320000000,
+			.bus_freq = 4,
+			.io_fraction = 0,
+		},
+		{
 			.gpu_freq = 300000000,
 			.bus_freq = 4,
 			.io_fraction = 0,
@@ -796,10 +856,11 @@ static struct kgsl_device_platform_data kgsl_3d0_pdata = {
 			.bus_freq = 0,
 		},
 	},
-	.init_level = 0,
-	.num_levels = 5,
+	.init_level = 2, //Init at 266MHZ
+	.max_level = 0,  //Allow max of 320MHz
+	.num_levels = 7,
 	.set_grp_async = NULL,
-	.idle_timeout = HZ/12,
+	.idle_timeout = HZ/5,
 	.nap_allowed = true,
 	.clk_map = KGSL_CLK_CORE | KGSL_CLK_IFACE | KGSL_CLK_MEM_IFACE,
 #ifdef CONFIG_MSM_BUS_SCALING
@@ -837,20 +898,29 @@ static struct kgsl_device_platform_data kgsl_2d0_pdata = {
 		{
 			.gpu_freq = 228571000,
 			.bus_freq = 2,
-		},	
+		},
 		{
 			.gpu_freq = 200000000,
 			.bus_freq = 1,
 		},
 		{
-			.gpu_freq = 200000000,
+			.gpu_freq = 160000000,
+			.bus_freq = 1,
+		},
+		{
+			.gpu_freq = 96000000,
+			.bus_freq = 1,
+		},
+		{
+			.gpu_freq = 27000000,
 			.bus_freq = 0,
 		},
 	},
-	.init_level = 0,
-	.num_levels = 2,
+	.init_level = 1, //Init at 200MHz
+    .max_level = 0,  //Max at 228MHz
+	.num_levels = 5,
 	.set_grp_async = NULL,
-	.idle_timeout = HZ/10,
+	.idle_timeout = HZ/5,
 	.nap_allowed = true,
 	.clk_map = KGSL_CLK_CORE | KGSL_CLK_IFACE,
 #ifdef CONFIG_MSM_BUS_SCALING
@@ -888,20 +958,29 @@ static struct kgsl_device_platform_data kgsl_2d1_pdata = {
 		{
 			.gpu_freq = 228571000,
 			.bus_freq = 2,
-		},	
+		},
 		{
 			.gpu_freq = 200000000,
 			.bus_freq = 1,
 		},
 		{
-			.gpu_freq = 200000000,
+			.gpu_freq = 160000000,
+			.bus_freq = 1,
+		},
+		{
+			.gpu_freq = 96000000,
+			.bus_freq = 1,
+		},
+		{
+			.gpu_freq = 27000000,
 			.bus_freq = 0,
 		},
 	},
-	.init_level = 0,
-	.num_levels = 2,
+	.init_level = 1, //Init at 200MHz
+    .max_level = 0,  //Max at 228MHz
+	.num_levels = 5,
 	.set_grp_async = NULL,
-	.idle_timeout = HZ/10,
+	.idle_timeout = HZ/5,
 	.nap_allowed = true,
 	.clk_map = KGSL_CLK_CORE | KGSL_CLK_IFACE,
 #if 0	// ICS ES2
