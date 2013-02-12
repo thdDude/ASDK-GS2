@@ -583,12 +583,7 @@ static int __init pm_init(void)
 	power_kobj = kobject_create_and_add("power", NULL);
 	if (!power_kobj)
 		return -ENOMEM;
-#ifdef CONFIG_SEC_DVFS
-	freq_min_apps = MIN_FREQ_LIMIT;
-	freq_max_apps = MAX_FREQ_LIMIT;
-	freq_min_apps_lock = 0;
-	freq_max_apps_lock = 0;
-#endif
+
 	return sysfs_create_group(power_kobj, &attr_group);
 }
 
