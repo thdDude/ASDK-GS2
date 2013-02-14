@@ -19,7 +19,6 @@ obj-$(CONFIG_CPU_FREQ_GOV_LAGFREE)		+= cpufreq_lagfree.o
 obj-$(CONFIG_CPU_FREQ_GOV_GALLIMAUFRY)	+= cpufreq_gallimaufry.o
 obj-$(CONFIG_CPU_FREQ_GOV_AGGRESSIVE)	+= cpufreq_aggressive.o
 obj-$(CONFIG_CPU_FREQ_GOV_SCARY)	+= cpufreq_scary.o
-obj-$(CONFIG_CPU_FREQ_GOV_TOUCHDEMAND)  += cpufreq_touchdemand.o
 obj-$(CONFIG_CPU_FREQ_GOV_PEGASUSQ)		+= cpufreq_pegasusq.o
 obj-$(CONFIG_CPU_FREQ_GOV_SMARTASS2)	+= cpufreq_smartass2.o
 obj-$(CONFIG_CPU_FREQ_GOV_INTELLIDEMAND)+= cpufreq_intellidemand.o
