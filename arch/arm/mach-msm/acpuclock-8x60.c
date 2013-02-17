@@ -57,7 +57,7 @@
 #define SCPLL_LOW_VDD		1000000 /* uV */
 #define SCPLL_NOMINAL_VDD	1100000 /* uV */
 
-#define MAX_FREQ_X		1836000
+#define MAX_FREQ_X		1782000
 #define MIN_FREQ_X		384000
 #define MAX_BOOT_X		1512000
 
