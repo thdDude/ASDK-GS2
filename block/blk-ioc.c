@@ -162,5 +162,3 @@ static int __init blk_ioc_init(void)
 	return 0;
 }
 subsys_initcall(blk_ioc_init);
-
-#if defined (CONFIG_IOSCHED_CFQ) || (CONFIG_IOSCHED_FIOPS)

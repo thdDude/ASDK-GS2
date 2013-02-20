@@ -197,7 +197,4 @@ static inline int blk_do_io_stat(struct request *rq)
 	        (rq->cmd_flags & REQ_DISCARD));
 }
 
-
-#if defined (CONFIG_IOSCHED_CFQ) || (CONFIG_IOSCHED_FIOPS)
-
 #endif
