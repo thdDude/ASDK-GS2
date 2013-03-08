@@ -1,5 +1,5 @@
 /*
- * Author: imoseyon (original by Chad Froebel) 
+ * Author: Chad Froebel <chadfroebel@gmail.com>
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -14,36 +14,38 @@
 
 #include <linux/kobject.h>
 #include <linux/sysfs.h>
+#include <linux/fastchg.h>
+#include <linux/slab.h>
 
 int force_fast_charge;
 
 /* sysfs interface */
 static ssize_t force_fast_charge_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-return sprintf(buf, "%d\n", force_fast_charge);
+	return sprintf(buf, "%d\n", force_fast_charge);
 }
 
 static ssize_t force_fast_charge_store(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
 {
-sscanf(buf, "%du", &force_fast_charge);
-return count;
+	sscanf(buf, "%du", &force_fast_charge);
+	return count;
 }
 
 static struct kobj_attribute force_fast_charge_attribute =
-__ATTR(force_fast_charge, 0666, force_fast_charge_show, force_fast_charge_store);
+	__ATTR(force_fast_charge, 0666, force_fast_charge_show, force_fast_charge_store);
 
 static struct attribute *attrs[] = {
-&force_fast_charge_attribute.attr,
-NULL,
+	&force_fast_charge_attribute.attr,
+	NULL,
 };
 
 static struct attribute_group attr_group = {
-.attrs = attrs,
+	.attrs = attrs,
 };
 
 static struct kobject *force_fast_charge_kobj;
 
-int force_fast_charge_init(void)
+static int __init force_fast_charge_init(void)
 {
 	int retval;
 
@@ -60,7 +62,7 @@ int force_fast_charge_init(void)
 }
 /* end sysfs interface */
 
-void force_fast_charge_exit(void)
+static void __exit force_fast_charge_exit(void)
 {
 	kobject_put(force_fast_charge_kobj);
 }
