@@ -15,12 +15,15 @@
 #include <mach/msm_iomap.h>
 #include <mach/msm_bus.h>
 #include <linux/ktime.h>
-#include <linux/cpufreq.h>
 
 #include "kgsl.h"
 #include "kgsl_pwrscale.h"
 #include "kgsl_device.h"
 #include "kgsl_trace.h"
+
+#ifdef CONFIG_KGSL_GPU_CTRL
+#include <linux/gpu_freq.h>
+#endif
 
 #define KGSL_PWRFLAGS_POWER_ON 0
 #define KGSL_PWRFLAGS_CLK_ON   1
@@ -97,7 +100,13 @@ void kgsl_pwrctrl_pwrlevel_change(struct kgsl_device *device,
 		/* Update the clock stats */
 		update_clk_statistics(device, true);
 		/* Finally set active level */
-		pwr->active_pwrlevel = new_level;
+		
+		
+		//printk("CvD-1: %d || %d || %d || %d || %d || %d || %d\n", new_level,
+		//	diff, d, pwr->active_pwrlevel,
+		//	gpu_3d_freq_phase, gpu_2d_freq_phase,
+		//	pwr->pwrlevels[level].gpu_freq);
+
 		if ((test_bit(KGSL_PWRFLAGS_CLK_ON, &pwr->power_flags)) ||
 			(device->state == KGSL_STATE_NAP)) {
 			/*
@@ -112,9 +121,35 @@ void kgsl_pwrctrl_pwrlevel_change(struct kgsl_device *device,
 			 * avoid glitches.
 			 */
 			while (level != new_level) {
-				level += d;
-				clk_set_rate(pwr->grp_clks[0],
+#ifdef CONFIG_KGSL_GPU_CTRL
+			/*
+			 * when diff is -1, we're scaling up for speed
+			 * when diff is 1, we're scaling down
+			 */
+				if(diff == 1) {
+					// let the GPU scale down nautrally
+					clk_set_rate(pwr->grp_clks[0],
 						pwr->pwrlevels[level].gpu_freq);
+				} else {
+					// when scaling up, adhere to the max level
+					if(pwr->num_pwrlevels == 7) {
+						// 3D GPU frequency limit check
+						if (level <= gpu_3d_freq_phase)
+							break;
+					} else {
+						// 2D GPU frequency limit check
+						// Logging shows that 2D never comes
+						// into this function ... need to figure
+						// out how that works next.
+						if (level <= gpu_2d_freq_phase)
+							break;
+					}
+				}	
+#endif
+			level += d;
+			pwr->active_pwrlevel = level;
+			clk_set_rate(pwr->grp_clks[0],
+					pwr->pwrlevels[level].gpu_freq);
 			}
 		}
 		if (test_bit(KGSL_PWRFLAGS_AXI_ON, &pwr->power_flags)) {
@@ -126,6 +161,11 @@ void kgsl_pwrctrl_pwrlevel_change(struct kgsl_device *device,
 		}
 		trace_kgsl_pwrlevel(device, pwr->active_pwrlevel,
 				    pwrlevel->gpu_freq);
+
+                //printk("CvD-2: %d || %d || %d || %d || %d || %d || %d\n", level,
+                //        diff, d, pwr->active_pwrlevel,
+		//	gpu_3d_freq_phase, gpu_2d_freq_phase,
+		//	pwr->pwrlevels[level].gpu_freq);
 	}
 }
 EXPORT_SYMBOL(kgsl_pwrctrl_pwrlevel_change);
