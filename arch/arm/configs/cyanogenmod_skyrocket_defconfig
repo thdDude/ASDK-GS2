@@ -680,10 +680,7 @@ CONFIG_CPU_FREQ_MSM=y
 =======
 # Moretz Additions
 #
-<<<<<<< HEAD
 CONFIG_UKSM=y
-=======
->>>>>>> 6d2f0ad... ARM: revamped cpu topology
 CONFIG_ARM_CPU_TOPOLOGY=y
 CONFIG_FORCE_FAST_CHARGE=y
 CONFIG_MSM_MPDEC=y
