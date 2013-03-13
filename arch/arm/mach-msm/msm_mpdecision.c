@@ -80,9 +80,10 @@ static struct msm_mpdec_tuners {
         .min_cpus = 1,
 };
 
-static unsigned int NwNs_Threshold[4] = {35, 0, 0, 5};
-static unsigned int TwTs_Threshold[4] = {250, 0, 0, 250};
+static unsigned int NwNs_Threshold[4] = {12, 0, 0, 20};
+static unsigned int TwTs_Threshold[4] = {140, 0, 0, 190};
 
+extern unsigned int get_rq_info(void);
 extern unsigned long acpuclk_get_rate(int);
 
 unsigned int state = MSM_MPDEC_IDLE;
@@ -162,6 +163,7 @@ static int mp_decision(void)
 	}
 	total_time += this_time;
 
+	rq_depth = get_rq_info();
 	nr_cpu_online = num_online_cpus();
 
 	if (nr_cpu_online) {
@@ -249,9 +251,8 @@ static void msm_mpdec_work_thread(struct work_struct *work)
 			} else if (per_cpu(msm_mpdec_cpudata, cpu).online != cpu_online(cpu)) {
 				pr_info(MPDEC_TAG"CPU[%d] was controlled outside of mpdecision! | pausing [%d]ms\n",
 						cpu, msm_mpdec_tuners_ins.pause);
-				cancel_delayed_work_sync(&msm_mpdec_work);
+				msleep(msm_mpdec_tuners_ins.pause);
 				was_paused = true;
-				goto out2;
 			}
 		}
 		break;
@@ -267,9 +268,8 @@ static void msm_mpdec_work_thread(struct work_struct *work)
 			} else if (per_cpu(msm_mpdec_cpudata, cpu).online != cpu_online(cpu)) {
 				pr_info(MPDEC_TAG"CPU[%d] was controlled outside of mpdecision! | pausing [%d]ms\n",
 						cpu, msm_mpdec_tuners_ins.pause);
-				cancel_delayed_work_sync(&msm_mpdec_work);
+				msleep(msm_mpdec_tuners_ins.pause);
 				was_paused = true;
-				goto out2;
 			}
 		}
 		break;
@@ -283,12 +283,6 @@ out:
 	if (state != MSM_MPDEC_DISABLED)
 		queue_delayed_work(msm_mpdec_workq, &msm_mpdec_work,
 				msecs_to_jiffies(msm_mpdec_tuners_ins.delay));
-	return;
-
-out2:
-	if (state != MSM_MPDEC_DISABLED)
-		queue_delayed_work(msm_mpdec_workq, &msm_mpdec_work,
-				msecs_to_jiffies(msm_mpdec_tuners_ins.pause));
 	return;
 }
 
