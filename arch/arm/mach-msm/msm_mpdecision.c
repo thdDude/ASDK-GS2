@@ -31,6 +31,7 @@
 #include <asm-generic/cputime.h>
 #include <linux/hrtimer.h>
 #include <linux/delay.h>
+#include "acpuclock.h" 
 
 #define MPDEC_TAG                       "[MPDEC]: "
 #define MSM_MPDEC_STARTDELAY            70000
