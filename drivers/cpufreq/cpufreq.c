@@ -34,9 +34,11 @@
 #include <trace/events/power.h>
 #include <linux/semaphore.h>
 
+#ifdef CONFIG_ARM_AUTO_HOTPLUG
 static unsigned int Lenable_auto_hotplug = 0; 
 
 extern void apenable_auto_hotplug(bool state); 
+#endif 
 
 /* Initial implementation of userspace voltage control */
 #define FREQCOUNT 28
@@ -673,6 +675,7 @@ static ssize_t show_bios_limit(struct cpufreq_policy *policy, char *buf)
 	return sprintf(buf, "%u\n", policy->cpuinfo.max_freq);
 }
 
+#ifdef CONFIG_ARM_AUTO_HOTPLUG
 static ssize_t show_enable_auto_hotplug(struct cpufreq_policy *policy, char *buf)
 {
 	return sprintf(buf, "%u\n", Lenable_auto_hotplug);
@@ -687,7 +690,7 @@ static ssize_t store_enable_auto_hotplug(struct cpufreq_policy *policy,
 	apenable_auto_hotplug((bool) Lenable_auto_hotplug);
 	return count;
 }
-
+#endif
 #ifdef CONFIG_VDD_USERSPACE
 extern ssize_t acpuclk_get_vdd_levels_str(char *buf);
 static ssize_t show_vdd_levels(struct cpufreq_policy *policy, char *buf)
@@ -801,7 +804,9 @@ cpufreq_freq_attr_ro(scaling_available_governors);
 cpufreq_freq_attr_ro(scaling_driver);
 cpufreq_freq_attr_ro(scaling_cur_freq);
 cpufreq_freq_attr_ro(bios_limit);
+#ifdef CONFIG_ARM_AUTO_HOTPLUG
 cpufreq_freq_attr_rw(enable_auto_hotplug); 
+#endif
 cpufreq_freq_attr_ro(related_cpus);
 cpufreq_freq_attr_ro(affected_cpus);
 cpufreq_freq_attr_ro(frequency_voltage_table);
@@ -832,7 +837,9 @@ static struct attribute *default_attrs[] = {
 	&scaling_driver.attr,
 	&scaling_available_governors.attr,
 	&scaling_setspeed.attr,
+#ifdef CONFIG_ARM_AUTO_HOTPLUG
 	&enable_auto_hotplug.attr,  
+#endif	
 	&UV_mV_table.attr,
 #ifdef CONFIG_VDD_USERSPACE
   &vdd_levels.attr,
