@@ -40,6 +40,7 @@ obj-$(CONFIG_CPU_FREQ_GOV_LIONHEART)	+= cpufreq_lionheart.o
 obj-$(CONFIG_CPU_FREQ_GOV_BADASS)	+= cpufreq_badass.o
 obj-$(CONFIG_CPU_FREQ_GOV_SAVAGEDZEN)	+= cpufreq_savaged_zen.o
 obj-$(CONFIG_CPU_FREQ_GOV_FANTASY)    += cpufreq_fantasy.o
+obj-$(CONFIG_CPU_FREQ_GOV_ASDK)		+= cpufreq_asdk.o
 
 # CPUfreq cross-arch helpers
 obj-$(CONFIG_CPU_FREQ_TABLE)		+= freq_table.o

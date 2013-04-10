@@ -163,6 +163,18 @@ config CPU_FREQ_DEFAULT_GOV_ONDEMAND
 	  governor. If unsure have a look at the help section of the
 	  driver. Fallback governor will be the performance governor.
 
+config CPU_FREQ_DEFAULT_GOV_ASDK
+	bool "asdk"
+	select CPU_FREQ_GOV_ASDK
+	select CPU_FREQ_GOV_PERFORMANCE
+	help
+	  Based on ondemand governor. Ondemand allows
+	  you to get a full dynamic frequency capable system by simply
+	  loading your cpufreq low-level hardware driver.
+	  Be aware that not all cpufreq drivers support the ondemand
+	  governor. If unsure have a look at the help section of the
+	  driver. Fallback governor will be the performance governor.
+
 config CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
 	bool "conservative"
 	select CPU_FREQ_GOV_CONSERVATIVE
@@ -550,22 +562,39 @@ config CPU_FREQ_GOV_ONDEMAND
 
 	  If in doubt, say N.
 
-config CPU_FREQ_GOV_ONDEMAND_2_PHASE
-	tristate "'2-phase' power-efficiency ondemand algorithm"
-	depends on CPU_FREQ_GOV_ONDEMAND
-	help
-	  '2-phase' - This driver adds a new algo to save power
-
-config CPU_FREQ_GOV_ONDEMAND_2_PHASE_FREQ
-	int "'2-phase' ondemand frequency"
-	default 1242000
-	depends on CPU_FREQ_GOV_ONDEMAND
-	depends on CPU_FREQ_GOV_ONDEMAND_2_PHASE
 
 config CPU_FREQ_GOV_LIONHEART
 	tristate "'lionheart' spufreq governor"
 	depends on CPU_FREQ
 
+config CPU_FREQ_GOV_ASDK
+	tristate "'asdk' cpufreq policy governor"
+	select CPU_FREQ_TABLE
+	help
+	  'asdk' based on ondemand - This driver adds a dynamic cpufreq policy governor.
+	  The governor does a periodic polling and 
+	  changes frequency based on the CPU utilization.
+	  The support for this governor depends on CPU capability to
+	  do fast frequency switching (i.e, very low latency frequency
+	  transitions). 
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called cpufreq_asdk.
+
+	  If in doubt, say N.
+
+config CPU_FREQ_GOV_ASDK_2_PHASE
+	tristate "'2-phase' power-efficiency ondemand algorithm"
+	depends on CPU_FREQ_GOV_ASDK
+	help
+	  '2-phase' - This driver adds a new algo to save power
+
+config CPU_FREQ_GOV_ASDK_2_PHASE_FREQ
+	int "'2-phase' asdk frequency"
+	default 1242000
+	depends on CPU_FREQ_GOV_ASDK
+	depends on CPU_FREQ_GOV_ASDK_2_PHASE
+	
 config CPU_FREQ_GOV_INTERACTIVE
 	tristate "'interactive' cpufreq policy governor"
 	help

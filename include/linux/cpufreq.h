@@ -494,8 +494,10 @@ extern struct cpufreq_governor cpufreq_gov_savagedzen;
 #elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_FANTASY)
 extern struct cpufreq_governor cpufreq_gov_fantasy;
 #define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_fantasy)
+#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_ASDK)
+extern struct cpufreq_governor cpufreq_gov_asdk;
+#define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_asdk)
 #endif
-
 
 /*********************************************************************
  *                     FREQUENCY TABLE HELPERS                       *
