@@ -40,7 +40,7 @@ static unsigned int Lenable_auto_hotplug = 0;
 extern void apenable_auto_hotplug(bool state); 
 #endif 
 
-int GLOBALKT_MIN_FREQ_LIMIT = 384000;
+int GLOBALKT_MIN_FREQ_LIMIT = 432000;
 int GLOBALKT_MAX_FREQ_LIMIT = 1512000;
 
 /* Initial implementation of userspace voltage control */
@@ -459,8 +459,6 @@ static ssize_t store_##file_name					\
 	return ret ? ret : count;					\
 }
 
-store_one(scaling_min_freq, min);
-#ifdef CONFIG_SEC_DVFS
 static ssize_t store_scaling_min_freq(struct cpufreq_policy *policy, const char *buf, size_t count)
 {
 	unsigned int ret = -EINVAL;
@@ -472,7 +470,7 @@ static ssize_t store_scaling_min_freq(struct cpufreq_policy *policy, const char 
 		return -EINVAL;
 
 	if (value == 384000)
-		value = 378000;
+		value = 432000;
 
 	if (value <= GLOBALKT_MIN_FREQ_LIMIT)
 		value = GLOBALKT_MIN_FREQ_LIMIT;
@@ -484,6 +482,16 @@ static ssize_t store_scaling_min_freq(struct cpufreq_policy *policy, const char 
 	ret = __cpufreq_set_policy(policy, &new_policy);
 	policy->user_policy.min = policy->min;
 	
+	return count;
+}
+
+static ssize_t store_scaling_max_freq
+	(struct cpufreq_policy *policy, const char *buf, size_t count)
+{
+	unsigned int ret = -EINVAL;
+	unsigned int value = 0;
+	struct cpufreq_policy new_policy;
+
 	ret = sscanf(buf, "%u", &value);
 	if (ret != 1)
 		return -EINVAL;
@@ -504,9 +512,6 @@ static ssize_t store_scaling_min_freq(struct cpufreq_policy *policy, const char 
 	}
 	return count;
 }
-#else
-store_one(scaling_max_freq, max);
-#endif
 
 /**
  * show_cpuinfo_cur_freq - current CPU frequency as detected by hardware
