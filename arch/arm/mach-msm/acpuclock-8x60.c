@@ -815,6 +815,7 @@ out:
 	return rc;
 }
 
+#ifdef CONFIG_VDD_USERSPACE 
 ssize_t acpuclk_get_vdd_levels_str(char *buf) {
 	int i, len = 0;
 
@@ -848,6 +849,7 @@ void acpuclk_set_vdd(unsigned int khz, int vdd_uv) {
 
 	mutex_unlock(&drv_state.lock);
 }
+#endif
 
 static void __init scpll_init(int pll, unsigned int max_l_val)
 {
