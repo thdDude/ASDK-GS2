@@ -9,11 +9,11 @@
  * 
 */
 
-#ifndef LINUX_ASDK_H
-#define LINUX_ASDK_H
+#ifndef __LINUX_ASDK_H__
+#define __LINUX_ASDK_H__
 
-int ASDK_MIN_FREQ 384000
-int ASDK_MAX_FREQ 1512000
+#define ASDK_MIN_FREQ 384000
+#define ASDK_MAX_FREQ 1512000
 
 #define FREQSTEPS 31
 
@@ -23,5 +23,5 @@ int ASDK_MAX_FREQ 1512000
 #define MAX_VDD_DIG		1350000 /* uV */
 
 
-#endif
+#endif /* __LINUX_ASDK_H__ */
 
