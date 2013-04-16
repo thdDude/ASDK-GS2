@@ -692,13 +692,6 @@ struct ion_allocation_data {
 	struct ion_handle *handle;
 };
 
-struct ion_allocation_data_compat {
-	size_t len;
-	size_t align;
-	unsigned int flags;
-	struct ion_handle *handle;
-};
-
 /**
  * struct ion_fd_data - metadata passed to/from userspace for a handle/fd pair
  * @handle:	a handle
@@ -780,9 +773,6 @@ struct ion_flag_data {
 #define ION_IOC_ALLOC		_IOWR(ION_IOC_MAGIC, 0, \
 				      struct ion_allocation_data)
 
-#define ION_IOC_ALLOC_COMPAT _IOWR(ION_IOC_MAGIC, 0, \
-				      struct ion_allocation_data_compat)
-
 /**
  * DOC: ION_IOC_FREE - free memory
  *
@@ -820,8 +810,6 @@ struct ion_flag_data {
  */
 #define ION_IOC_IMPORT		_IOWR(ION_IOC_MAGIC, 5, int)
 
-#define ION_IOC_IMPORT_COMPAT	_IOWR(ION_IOC_MAGIC, 5, int)
-
 /**
  * DOC: ION_IOC_CUSTOM - call architecture specific ion ioctl
  *
@@ -838,9 +826,6 @@ struct ion_flag_data {
  */
 #define ION_IOC_CLEAN_CACHES	_IOWR(ION_IOC_MAGIC, 7, \
 						struct ion_flush_data)
-#define ION_IOC_CLEAN_CACHES_COMPAT	_IOWR(ION_IOC_MAGIC, 7, \
-						struct ion_flush_data)
-
 /**
  * DOC: ION_MSM_IOC_INV_CACHES - invalidate the caches
  *
@@ -848,10 +833,6 @@ struct ion_flag_data {
  */
 #define ION_IOC_INV_CACHES	_IOWR(ION_IOC_MAGIC, 8, \
 						struct ion_flush_data)
-
-#define ION_IOC_INV_CACHES_COMPAT	_IOWR(ION_IOC_MAGIC, 8, \
-					    struct ion_flush_data)
-
 /**
  * DOC: ION_MSM_IOC_CLEAN_CACHES - clean and invalidate the caches
  *
@@ -859,9 +840,6 @@ struct ion_flag_data {
  */
 #define ION_IOC_CLEAN_INV_CACHES	_IOWR(ION_IOC_MAGIC, 9, \
 						struct ion_flush_data)
-
-#define ION_IOC_CLEAN_INV_CACHES_COMPAT	_IOWR(ION_IOC_MAGIC, 9, \
-					    struct ion_flush_data)
 
 /**
  * DOC: ION_IOC_GET_FLAGS - get the flags of the handle
@@ -872,8 +850,6 @@ struct ion_flag_data {
 #define ION_IOC_GET_FLAGS		_IOWR(ION_IOC_MAGIC, 10, \
 						struct ion_flag_data)
 
-#define ION_IOC_GET_FLAGS_COMPAT _IOWR(ION_IOC_MAGIC, 10, \
-					    struct ion_flag_data)
 
 /**
  * DOC: ION_IOC_SYNC - BOGUS
