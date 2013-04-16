@@ -36,6 +36,8 @@
 #include <mach/sec_debug.h>
 #endif
 
+#include <linux/asdk.h>
+
 /* Frequency switch modes. */
 #define SHOT_SWITCH		4
 #define HOP_SWITCH		5
@@ -47,10 +49,6 @@
  * Calibration should respect this limit. */
 #define L_VAL_SCPLL_CAL_MIN	0x08 /* =  432 MHz with 27MHz source */
 
-#define MIN_VDD_SC		700000 /* uV */
-#define MAX_VDD_SC		1350000 /* uV */
-#define MAX_VDD_MEM		1350000 /* uV */
-#define MAX_VDD_DIG		1350000 /* uV */
 #define MAX_AXI			 310500 /* KHz */
 #define SCPLL_LOW_VDD_FMAX	 594000 /* KHz */
 #define SCPLL_LOW_VDD		1000000 /* uV */
@@ -970,7 +968,7 @@ static void __init bus_init(void)
 }
 
 #ifdef CONFIG_CPU_FREQ_MSM
-static struct cpufreq_frequency_table freq_table[NR_CPUS][30];
+static struct cpufreq_frequency_table freq_table[NR_CPUS][FREQSTEPS];
 
 static void __init cpufreq_table_init(void)
 {

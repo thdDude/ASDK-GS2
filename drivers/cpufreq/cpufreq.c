@@ -30,9 +30,9 @@
 #include <linux/mutex.h>
 #include <linux/syscore_ops.h>
 #include <linux/cpugovsync.h>
-
 #include <trace/events/power.h>
 #include <linux/semaphore.h>
+#include <linux/asdk.h>
 
 #ifdef CONFIG_ARM_AUTO_HOTPLUG
 static unsigned int Lenable_auto_hotplug = 0; 
@@ -40,8 +40,6 @@ static unsigned int Lenable_auto_hotplug = 0;
 extern void apenable_auto_hotplug(bool state); 
 #endif 
 
-int GLOBALKT_MIN_FREQ_LIMIT = 432000;
-int GLOBALKT_MAX_FREQ_LIMIT = 1512000;
 /**
  * The "cpufreq driver" - the arch- or hardware-dependent low
  * level driver of CPUFreq support, and its spinlock. This lock
@@ -473,11 +471,8 @@ static ssize_t store_scaling_min_freq(struct cpufreq_policy *policy, const char 
 	ret = __cpufreq_set_policy(policy, &new_policy);
 	policy->user_policy.min = policy->min;
 
-	if (value == 384000)
-		value = 432000;
-
-	if (value <= GLOBALKT_MIN_FREQ_LIMIT)
-		value = GLOBALKT_MIN_FREQ_LIMIT;
+	if (value <= ASDK_MIN_FREQ)
+		value = ASDK_MIN_FREQ;
 
 	if (force_cpu_gov_sync != 0) {
 		cpu_alt_id = policy->cpu ? 0 : 1;
@@ -522,6 +517,9 @@ static ssize_t store_scaling_max_freq
 
 	ret = __cpufreq_set_policy(policy, &new_policy);
 	policy->user_policy.max = policy->max;
+
+	if (value <= ASDK_MAX_FREQ)
+		value = ASDK_MAX_FREQ;
 
 	if (force_cpu_gov_sync != 0) {
 		cpu_alt_id = policy->cpu ? 0 : 1;
