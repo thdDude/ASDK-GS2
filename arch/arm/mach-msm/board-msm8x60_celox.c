@@ -189,7 +189,7 @@ int set_two_phase_freq_badass(int cpufreq);
 int set_three_phase_freq_badass(int cpufreq);
 #endif
 
-#ifdef CONFIG_CPU_FREQ_GOV_ASDK_2_PHASE
+#ifdef CONFIG_CPU_FREQ_GOV_ONDEMAND_2_PHASE
 int set_two_phase_freq(int cpufreq);
 #endif
 
@@ -17168,8 +17168,8 @@ static void __init msm8x60_init(struct msm_board_data *board_data)
 	set_three_phase_freq_badass(CONFIG_CPU_FREQ_GOV_BADASS_3_PHASE_FREQ);
 #endif
 
-#ifdef CONFIG_CPU_FREQ_GOV_ASDK_2_PHASE
-        set_two_phase_freq(CONFIG_CPU_FREQ_GOV_ASDK_2_PHASE_FREQ);
+#ifdef CONFIG_CPU_FREQ_GOV_ONDEMAND_2_PHASE
+        set_two_phase_freq(CONFIG_CPU_FREQ_GOV_ONDEMAND_2_PHASE_FREQ);
 #endif
 
 	/*
