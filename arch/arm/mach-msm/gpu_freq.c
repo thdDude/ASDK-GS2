@@ -21,7 +21,6 @@
 #include <linux/sysfs.h>
 #include <linux/gpu_freq.h>
 #include <linux/slab.h>
-#include <linux/module.h> 
 
 int gpu_2d_freq_phase;
 int gpu_3d_freq_phase;
@@ -107,4 +106,3 @@ module_init(gpu_control_init);
 module_exit(gpu_control_exit);
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Dave Carey <carvsdriver@gmail.com>");
-
