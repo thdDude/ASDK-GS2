@@ -13,8 +13,6 @@
 
 #include <linux/slab.h>
 #include <mach/msm_dcvs.h>
-#include <linux/gpu_freq.h>
-
 #include "kgsl.h"
 #include "kgsl_pwrscale.h"
 #include "kgsl_device.h"
@@ -65,14 +63,9 @@ static int msm_set_freq(struct msm_dcvs_freq *self,
 
 	/* msm_dcvs manager uses frequencies in kHz */
 	freq *= 1000;
-	for (i = 0; i < pwr->num_pwrlevels; i++) {
-
-		/* enforce max power level from sysfs interface here - CvD */
-
+	for (i = 0; i < pwr->num_pwrlevels; i++)
 		if (abs(pwr->pwrlevels[i].gpu_freq - freq) < delta)
 			break;
-	}
-
 	if (i == pwr->num_pwrlevels)
 		return 0;
 
