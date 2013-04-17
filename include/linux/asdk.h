@@ -15,7 +15,7 @@
 #define ASDK_MIN_FREQ 384000
 #define ASDK_MAX_FREQ 1512000
 
-#define FREQSTEPS 31
+#define FREQSTEPS 30
 
 #define MIN_VDD_SC		700000 /* uV */
 #define MAX_VDD_SC		1350000 /* uV */
