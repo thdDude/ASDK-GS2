@@ -15,13 +15,15 @@
 #define ASDK_MIN_FREQ 384000
 #define ASDK_MAX_FREQ 1512000
 
-#define FREQSTEPS 30
+#define FREQSTEPS 35
 
 #define MIN_VDD_SC		700000 /* uV */
 #define MAX_VDD_SC		1350000 /* uV */
 #define MAX_VDD_MEM		1350000 /* uV */
 #define MAX_VDD_DIG		1350000 /* uV */
 
+#define GPU_2D 228571000
+#define GPU_3D 320000000
 
 #endif /* __LINUX_ASDK_H__ */
 

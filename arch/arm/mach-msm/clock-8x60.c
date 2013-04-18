@@ -21,6 +21,8 @@
 #include <linux/delay.h>
 #include <linux/clk.h>
 #include <linux/clkdev.h>
+#include <linux/asdk.h>
+
 
 #include <mach/msm_iomap.h>
 #include <mach/clk.h>
@@ -2303,7 +2305,7 @@ static struct rcg_clk gfx2d0_clk = {
 		.dbg_name = "gfx2d0_clk",
 		.ops = &clk_ops_rcg_8x60,
 		VDD_DIG_FMAX_MAP3(LOW,  100000000, NOMINAL, 200000000,
-				  HIGH, 228571000),
+				  HIGH, GPU_2D),
 		CLK_INIT(gfx2d0_clk.c),
 	},
 };
@@ -2345,7 +2347,7 @@ static struct rcg_clk gfx2d1_clk = {
 		.dbg_name = "gfx2d1_clk",
 		.ops = &clk_ops_rcg_8x60,
 		VDD_DIG_FMAX_MAP3(LOW,  100000000, NOMINAL, 200000000,
-				  HIGH, 228571000),
+				  HIGH, GPU_2D),
 		CLK_INIT(gfx2d1_clk.c),
 	},
 };
@@ -2375,7 +2377,7 @@ static struct clk_freq_tbl clk_tbl_gfx3d[] = {
 	F_GFX3D(228571000, pll2, 2,  7),
 	F_GFX3D(266667000, pll2, 1,  3),
 	F_GFX3D(300000000, pll2, 3,  8),
-	F_GFX3D(310000000, pll2, 2,  5),
+	F_GFX3D(320000000, pll2, 2,  5),
 	F_END
 };
 
@@ -2416,7 +2418,7 @@ static struct rcg_clk gfx3d_clk = {
 		.dbg_name = "gfx3d_clk",
 		.ops = &clk_ops_rcg_8x60,
 		VDD_DIG_FMAX_MAP3(LOW,   96000000, NOMINAL, 200000000,
-				  HIGH, 320000000),
+				  HIGH, GPU_3D),
 		CLK_INIT(gfx3d_clk.c),
 		.depends = &gmem_axi_clk.c,
 	},
@@ -3020,7 +3022,7 @@ static struct rcg_clk vfe_clk = {
 		.dbg_name = "vfe_clk",
 		.ops = &clk_ops_rcg_8x60,
 		VDD_DIG_FMAX_MAP3(LOW,  110000000, NOMINAL, 228570000,
-				  HIGH, 228571000),
+				  HIGH, GPU_2D),
 		CLK_INIT(vfe_clk.c),
 		.depends = &vfe_axi_clk.c,
 	},
