@@ -56,20 +56,15 @@ obj-$(CONFIG_KEYBOARD_PMIC8058)		+= pmic8058-keypad.o
 obj-$(CONFIG_TOUCH_CYPRESS_SWEEP2WAKE)	+= s2w-switch.o
 ifdef CONFIG_TARGET_SERIES_DALI
 obj-$(CONFIG_KEYPAD_CYPRESS_TOUCH)                += cypress-touchkey_dali.o
-else ifdef CONFIG_JPN_MODEL_SC_05D
-obj-$(CONFIG_KEYPAD_CYPRESS_TOUCH)                += cypress-touchkey.o
 else ifdef CONFIG_KOR_MODEL_SHV_E160S
 obj-$(CONFIG_KEYPAD_CYPRESS_TOUCH)                += cypress-touchkey_q1_skt.o
 else ifdef CONFIG_KOR_MODEL_SHV_E160K
 obj-$(CONFIG_KEYPAD_CYPRESS_TOUCH)                += cypress-touchkey_q1_skt.o
+else ifdef CONFIG_GENERIC_BLN
+obj-$(CONFIG_KEYPAD_CYPRESS_TOUCH)                += cypress-touchkey-bln.o
 else
 obj-$(CONFIG_KEYPAD_CYPRESS_TOUCH)                += cypress-touchkey.o
 endif
 obj-$(CONFIG_KEYPAD_CYPRESS_TOUCH)                += issp_driver_routines.o
 obj-$(CONFIG_KEYPAD_CYPRESS_TOUCH)                += issp_main.o
 obj-$(CONFIG_KEYPAD_CYPRESS_TOUCH)                += issp_routines.o
-
-ifeq ($(TARGET_BUILD_VARIANT), eng)
-KBUILD_CFLAGS		+= -DDEBUG_TKEY_I717
-endif
-
