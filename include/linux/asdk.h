@@ -25,5 +25,8 @@
 #define GPU_2D 228571000
 #define GPU_3D 320000000
 
+#define ON 1
+#define OFF 0
+
 #endif /* __LINUX_ASDK_H__ */
 
