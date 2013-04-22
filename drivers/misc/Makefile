@@ -63,6 +63,9 @@ obj-$(CONFIG_SAMSUNG_EARJACK) += sec_earjack.o
 #ifdef CONFIG_TOUCH_WAKE 
 obj-$(CONFIG_TOUCH_WAKE)  += touch_wake.o 
 #endif
+ifeq ($(CONFIG_SAMSUNG_8X60_TABLET),y)
+obj-$(CONFIG_HAPTIC_ISA1200)		+= tablet_vibrator.o
+else
 obj-$(CONFIG_HAPTIC_ISA1200)		+= isa1200.o
 endif
 obj-$(CONFIG_PMIC8058_PWM) += pmic8058-pwm.o
