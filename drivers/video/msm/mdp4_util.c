@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2013, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2009-2013, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -673,6 +673,23 @@ irqreturn_t mdp4_isr(int irq, void *ptr)
 			mdp4_primary_vsync_lcdc();
 		else if (panel & MDP4_PANEL_DSI_VIDEO)
 			mdp4_primary_vsync_dsi_video();
+
+#ifdef CONFIG_FB_MSM_MIPI_DSI_ESD_REFRESH
+		// It make LP-mode between frame-to-frame.
+		// When LCD lost mipi-clock-signal because of ESD, LPmode make LCD to refresh clock.
+		// It is from SMD-recommand.
+		// but, while it is activated, system became slow.
+		if( use_vsyncLPmode )
+		{
+			dsi_lane_ctrl = MIPI_INP(MIPI_DSI_BASE + 0x00A8);
+			MIPI_OUTP(MIPI_DSI_BASE + 0x38, 0x14000000); // lp
+			MIPI_OUTP( MIPI_DSI_BASE + 0x00A8, dsi_lane_ctrl &0x0FFFFFFF );
+			// usleep(3); // spec : under 10us 
+			MIPI_OUTP( MIPI_DSI_BASE + 0x00A8, dsi_lane_ctrl );
+			MIPI_OUTP(MIPI_DSI_BASE + 0x38, 0x10000000); // hs
+		}
+#endif 	
+
 	}
 #ifdef CONFIG_FB_MSM_DTV
 	if (isr & INTR_EXTERNAL_VSYNC) {

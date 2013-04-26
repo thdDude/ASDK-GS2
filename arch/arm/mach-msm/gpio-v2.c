@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2012, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2010-2011, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -12,7 +12,6 @@
  */
 #include <linux/bitmap.h>
 #include <linux/bitops.h>
-#include <linux/delay.h>
 #include <linux/gpio.h>
 #include <linux/init.h>
 #include <linux/interrupt.h>
@@ -21,8 +20,6 @@
 #include <linux/module.h>
 #include <linux/spinlock.h>
 #include <linux/syscore_ops.h>
-#include <linux/irqdomain.h>
-#include <linux/of.h>
 
 #include <asm/mach/irq.h>
 
@@ -80,6 +77,7 @@ enum msm_tlmm_register {
 	SDC3_HDRV_PULL_CTL = 0x20a4,
 	SDC1_HDRV_PULL_CTL = 0x20a0,
 };
+
 #ifdef CONFIG_SEC_AUDIO_I2S_DRIVING_CURRENT
 enum msm_tlmm_Spkr_Hdrv_register {
 	CODEC_SPKR_HDRV_PULL_CTL = 0x20a8,
@@ -127,12 +125,14 @@ struct irq_chip msm_gpio_irq_extn = {
 	.irq_set_wake	= NULL,
 	.irq_disable	= NULL,
 };
+
 #ifdef CONFIG_SEC_AUDIO_I2S_DRIVING_CURRENT
 static const struct tlmm_field_cfg tlmm_codec_spkr_hdrv_cfgs[] = {
 	{CODEC_SPKR_HDRV_PULL_CTL,6}, /*CODEC_SPKR_SCK_HDRV */
 	{CODEC_SPKR_HDRV_PULL_CTL,3}, /*CODEC_SPKR_WS_HDRV */
 	{CODEC_SPKR_HDRV_PULL_CTL,0}, /*CODEC_SPKR_DOUT_HDRV */
 };
+
 static const struct tlmm_field_cfg tlmm_codec_spkr_pull_cfgs[] = {
 	{CODEC_SPKR_HDRV_PULL_CTL,11}, /*CODEC_SPKR_SCK_PULL */
 	{CODEC_SPKR_HDRV_PULL_CTL,9}, /*CODEC_SPKR_WS_PULL */
@@ -184,7 +184,6 @@ struct msm_gpio_dev {
 	DECLARE_BITMAP(enabled_irqs, NR_MSM_GPIOS);
 	DECLARE_BITMAP(wake_irqs, NR_MSM_GPIOS);
 	DECLARE_BITMAP(dual_edge_irqs, NR_MSM_GPIOS);
-	struct irq_domain domain;
 };
 
 static DEFINE_SPINLOCK(tlmm_lock);
@@ -243,21 +242,6 @@ static int msm_gpio_direction_output(struct gpio_chip *chip,
 	return 0;
 }
 
-#ifdef CONFIG_OF
-static int msm_gpio_to_irq(struct gpio_chip *chip, unsigned offset)
-{
-	struct msm_gpio_dev *g_dev = to_msm_gpio_dev(chip);
-	struct irq_domain *domain = &g_dev->domain;
-	return domain->irq_base + (offset - chip->base);
-}
-
-static inline int msm_irq_to_gpio(struct gpio_chip *chip, unsigned irq)
-{
-	struct msm_gpio_dev *g_dev = to_msm_gpio_dev(chip);
-	struct irq_domain *domain = &g_dev->domain;
-	return irq - domain->irq_base;
-}
-#else
 static int msm_gpio_to_irq(struct gpio_chip *chip, unsigned offset)
 {
 	return MSM_GPIO_TO_INT(offset - chip->base);
@@ -267,7 +251,6 @@ static inline int msm_irq_to_gpio(struct gpio_chip *chip, unsigned irq)
 {
 	return irq - MSM_GPIO_TO_INT(chip->base);
 }
-#endif
 
 static int msm_gpio_request(struct gpio_chip *chip, unsigned offset)
 {
@@ -362,7 +345,8 @@ static void msm_gpio_irq_ack(struct irq_data *d)
 
 static void __msm_gpio_irq_mask(unsigned int gpio)
 {
-	clr_gpio_bits(INTR_ENABLE, GPIO_INTR_CFG(gpio));
+	__raw_writel(TARGET_PROC_NONE, GPIO_INTR_CFG_SU(gpio));
+	clr_gpio_bits(INTR_RAW_STATUS_EN | INTR_ENABLE, GPIO_INTR_CFG(gpio));
 }
 
 static void msm_gpio_irq_mask(struct irq_data *d)
@@ -383,8 +367,8 @@ static void msm_gpio_irq_mask(struct irq_data *d)
 
 static void __msm_gpio_irq_unmask(unsigned int gpio)
 {
-	__raw_writel(BIT(INTR_STATUS_BIT), GPIO_INTR_STATUS(gpio));
-	set_gpio_bits(INTR_ENABLE, GPIO_INTR_CFG(gpio));
+	set_gpio_bits(INTR_RAW_STATUS_EN | INTR_ENABLE, GPIO_INTR_CFG(gpio));
+	__raw_writel(TARGET_PROC_SCORPION, GPIO_INTR_CFG_SU(gpio));
 }
 
 static void msm_gpio_irq_unmask(struct irq_data *d)
@@ -416,14 +400,7 @@ static int msm_gpio_irq_set_type(struct irq_data *d, unsigned int flow_type)
 
 	spin_lock_irqsave(&tlmm_lock, irq_flags);
 
-	/* RAW_STATUS_EN is left on for all gpio irqs. Due to the
-	 * internal circuitry of TLMM, toggling the RAW_STATUS
-	 * could cause the INTR_STATUS to be set for EDGE interrupts.
-	 */
-	set_gpio_bits(INTR_RAW_STATUS_EN, GPIO_INTR_CFG(gpio));
-
 	bits = __raw_readl(GPIO_INTR_CFG(gpio));
-	__raw_writel(TARGET_PROC_SCORPION, GPIO_INTR_CFG_SU(gpio));
 
 	if (flow_type & IRQ_TYPE_EDGE_BOTH) {
 		bits |= INTR_DECT_CTL_EDGE;
@@ -444,13 +421,6 @@ static int msm_gpio_irq_set_type(struct irq_data *d, unsigned int flow_type)
 		bits &= ~INTR_POL_CTL_HI;
 
 	__raw_writel(bits, GPIO_INTR_CFG(gpio));
-
-	/* Sometimes it might take a little while to update
-	* the interrupt status after the RAW_STATUS is enabled
-	* We clear the interrupt status before enabling the
-	* interrupt in the unmask call-back
-	*/
-	udelay(5);
 
 	if ((flow_type & IRQ_TYPE_EDGE_BOTH) == IRQ_TYPE_EDGE_BOTH)
 		msm_gpio_update_dual_edge_pos(d, gpio);
@@ -520,12 +490,6 @@ static struct irq_chip msm_gpio_irq_chip = {
 	.irq_disable	= msm_gpio_irq_disable,
 };
 
-/*
- * This lock class tells lockdep that GPIO irqs are in a different
- * category than their parents, so it won't report false recursion.
- */
-static struct lock_class_key msm_gpio_lock_class;
-
 static int __devinit msm_gpio_probe(void)
 {
 	int i, irq, ret;
@@ -540,7 +504,6 @@ static int __devinit msm_gpio_probe(void)
 
 	for (i = 0; i < msm_gpio.gpio_chip.ngpio; ++i) {
 		irq = msm_gpio_to_irq(&msm_gpio.gpio_chip, i);
-		irq_set_lockdep_class(irq, &msm_gpio_lock_class);
 		irq_set_chip_and_handler(irq, &msm_gpio_irq_chip,
 					 handle_level_irq);
 		set_irq_flags(irq, IRQF_VALID);
@@ -692,6 +655,7 @@ void msm_tlmm_set_spkr_pull(enum msm_tlmm_spkr_pull_tgt tgt, int drv_str)
 }
 EXPORT_SYMBOL(msm_tlmm_set_spkr_pull);
 #endif
+
 int gpio_tlmm_config(unsigned config, unsigned disable)
 {
 	uint32_t flags;
@@ -741,48 +705,6 @@ int msm_gpio_install_direct_irq(unsigned gpio, unsigned irq,
 	return 0;
 }
 EXPORT_SYMBOL(msm_gpio_install_direct_irq);
-
-#ifdef CONFIG_OF
-static int msm_gpio_domain_dt_translate(struct irq_domain *d,
-					struct device_node *controller,
-					const u32 *intspec,
-					unsigned int intsize,
-					unsigned long *out_hwirq,
-					unsigned int *out_type)
-{
-	if (d->of_node != controller)
-		return -EINVAL;
-	if (intsize != 2)
-		return -EINVAL;
-
-	/* hwirq value */
-	*out_hwirq = intspec[0];
-
-	/* irq flags */
-	*out_type = intspec[1] & IRQ_TYPE_SENSE_MASK;
-	return 0;
-}
-
-static struct irq_domain_ops msm_gpio_irq_domain_ops = {
-	.dt_translate = msm_gpio_domain_dt_translate,
-};
-
-int __init msm_gpio_of_init(struct device_node *node,
-			    struct device_node *parent)
-{
-	struct irq_domain *domain = &msm_gpio.domain;
-
-	domain->irq_base = irq_domain_find_free_range(0, NR_MSM_GPIOS);
-	domain->nr_irq = NR_MSM_GPIOS;
-	domain->of_node = of_node_get(node);
-	domain->priv = &msm_gpio;
-	domain->ops = &msm_gpio_irq_domain_ops;
-	irq_domain_add(domain);
-	pr_debug("%s: irq_base = %u\n", __func__, domain->irq_base);
-
-	return 0;
-}
-#endif
 
 MODULE_AUTHOR("Gregory Bean <gbean@codeaurora.org>");
 MODULE_DESCRIPTION("Driver for Qualcomm MSM TLMMv2 SoC GPIOs");

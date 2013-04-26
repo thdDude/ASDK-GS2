@@ -53,7 +53,7 @@
 #include <tspdrvRecorder.c>
 #endif
 
-#if defined(CONFIG_USA_MODEL_SGH_T989D) || defined(CONFIG_KOR_MODEL_SHV_E160S) || defined(CONFIG_KOR_MODEL_SHV_E160K) ||defined(CONFIG_KOR_MODEL_SHV_E160L) || defined (CONFIG_JPN_MODEL_SC_05D)
+#if defined(CONFIG_USA_MODEL_SGH_T989D) || defined(CONFIG_KOR_MODEL_SHV_E160S) || defined(CONFIG_KOR_MODEL_SHV_E160K) ||defined(CONFIG_KOR_MODEL_SHV_E160L)
 #define VIBE_MINOR 250
 #endif
 /* Device name and version information */
@@ -72,11 +72,12 @@ static char g_szDeviceName[  (VIBE_MAX_DEVICE_NAME_LENGTH
 static size_t g_cchDeviceName;
 
 //static struct wake_lock vib_wake_lock;
+#if 0
 static uint32_t vibrator_device_gpio_config[] = {
 	GPIO_CFG(30, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
 	GPIO_CFG(31, 2, GPIO_CFG_OUTPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA),
 };
-static struct wake_lock vib_wake_lock;
+#endif
 
 /* Flag indicating whether the driver is in use */
 static char g_bIsPlaying;
@@ -135,7 +136,7 @@ static DECLARE_WORK(vibetonz_work, _set_vibetonz_work);
 static int set_vibetonz(int timeout)
 {
 	if(!timeout) {
-		//printk("[VIBETONZ] DISABLE\n");
+		printk("[VIBETONZ] DISABLE\n");
 #if defined (CONFIG_KOR_MODEL_SHV_E110S)		
 		if (get_hw_rev() > 0x00 ){
 			vib_isa1200_onoff(0);	
@@ -143,8 +144,7 @@ static int set_vibetonz(int timeout)
 		} else {
 			gpio_set_value(VIB_EN, VIBRATION_OFF);	
 		}		
-#elif defined (CONFIG_KOR_SHV_E120L_HD720) || defined(CONFIG_KOR_MODEL_SHV_E120K) || defined(CONFIG_KOR_MODEL_SHV_E120S) || defined(CONFIG_KOR_MODEL_SHV_E160S) \
-|| defined(CONFIG_KOR_MODEL_SHV_E160K) || defined(CONFIG_KOR_MODEL_SHV_E160L) ||  defined (CONFIG_KOR_MODEL_SHV_E120L) || defined (CONFIG_JPN_MODEL_SC_05D)
+#elif defined (CONFIG_KOR_SHV_E120L_HD720) || defined(CONFIG_KOR_MODEL_SHV_E120K) || defined(CONFIG_KOR_MODEL_SHV_E120S) || defined(CONFIG_KOR_MODEL_SHV_E160S) || defined(CONFIG_KOR_MODEL_SHV_E160K) || defined(CONFIG_KOR_MODEL_SHV_E160L) ||  defined (CONFIG_KOR_MODEL_SHV_E120L)
 		vib_isa1200_onoff(0);	
 		vibtonz_en(0);
 #elif defined (CONFIG_USA_MODEL_SGH_T989)|| defined (CONFIG_USA_MODEL_SGH_I727) || defined (CONFIG_USA_MODEL_SGH_T769)
@@ -170,7 +170,7 @@ static int set_vibetonz(int timeout)
 		gpio_set_value(VIB_EN, VIBRATION_OFF);	
 #endif		
 	} else {
-		//printk("[VIBETONZ] ENABLE\n");
+		printk("[VIBETONZ] ENABLE\n");
 #if defined (CONFIG_KOR_MODEL_SHV_E110S)		
 		if (get_hw_rev() > 0x00 ){
 			vibtonz_en(1);
@@ -179,8 +179,7 @@ static int set_vibetonz(int timeout)
 		} else {
 			gpio_set_value(VIB_EN, VIBRATION_ON);			
 		}
-#elif defined (CONFIG_KOR_SHV_E120L_HD720) || defined(CONFIG_KOR_MODEL_SHV_E120K) || defined(CONFIG_KOR_MODEL_SHV_E120S) || defined(CONFIG_KOR_MODEL_SHV_E160S)\
- || defined(CONFIG_KOR_MODEL_SHV_E160K) || defined(CONFIG_KOR_MODEL_SHV_E160L) ||  defined (CONFIG_KOR_MODEL_SHV_E120L) || defined (CONFIG_JPN_MODEL_SC_05D)
+#elif defined (CONFIG_KOR_SHV_E120L_HD720) || defined(CONFIG_KOR_MODEL_SHV_E120K) || defined(CONFIG_KOR_MODEL_SHV_E120S) || defined(CONFIG_KOR_MODEL_SHV_E160S) || defined(CONFIG_KOR_MODEL_SHV_E160K) || defined(CONFIG_KOR_MODEL_SHV_E160L) ||  defined (CONFIG_KOR_MODEL_SHV_E120L)
 		vibtonz_en(1);
 		vibe_set_pwm_freq(258);
 		vib_isa1200_onoff(1);							
@@ -253,7 +252,7 @@ static int get_time_for_vibetonz(struct timed_output_dev *dev)
 
 static void enable_vibetonz_from_user(struct timed_output_dev *dev,int value)
 {
-	//printk("[VIBETONZ] %s : time = %d msec \n",__func__,value);
+	printk("[VIBETONZ] %s : time = %d msec \n",__func__,value);
 	hrtimer_cancel(&timer);
 	
 	/* set_vibetonz(value); */
@@ -311,7 +310,7 @@ static const struct file_operations fops = {
 };
 
 static struct miscdevice miscdev = {
-#if defined(CONFIG_USA_MODEL_SGH_T989D) || defined(CONFIG_KOR_MODEL_SHV_E160S) || defined(CONFIG_KOR_MODEL_SHV_E160K) ||defined(CONFIG_KOR_MODEL_SHV_E160L) || defined (CONFIG_JPN_MODEL_SC_05D)
+#if defined(CONFIG_USA_MODEL_SGH_T989D) || defined(CONFIG_KOR_MODEL_SHV_E160S) || defined(CONFIG_KOR_MODEL_SHV_E160K) ||defined(CONFIG_KOR_MODEL_SHV_E160L)
 	.minor = VIBE_MINOR,
 #else
 	.minor =    MISC_DYNAMIC_MINOR,
@@ -413,7 +412,8 @@ int init_module(void)
         DbgOut((KERN_ERR "tspdrv: platform_device_register failed.\n"));
     }
 
-	android_vib_clk = clk_get(NULL,"sfpb_clk");
+	//android_vib_clk = clk_get(NULL,"sfpb_clk");
+	android_vib_clk = clk_get_sys("vibrator","core_clk");	
 	
 	if(IS_ERR(android_vib_clk)) {
 		printk("android vib clk failed!!!\n");
@@ -427,8 +427,7 @@ int init_module(void)
 		if (nRet)
 		pr_err("%s: i2c_add_driver() failed err = %d\n", __func__, nRet);
 	}
-#elif defined (CONFIG_KOR_MODEL_SHV_E120L) || defined(CONFIG_KOR_MODEL_SHV_E120K) || defined(CONFIG_KOR_MODEL_SHV_E120S) || defined(CONFIG_KOR_MODEL_SHV_E160S)\
- || defined(CONFIG_KOR_MODEL_SHV_E160K) || defined(CONFIG_KOR_MODEL_SHV_E160L) || defined (CONFIG_JPN_MODEL_SC_05D)
+#elif defined (CONFIG_KOR_MODEL_SHV_E120L) || defined(CONFIG_KOR_MODEL_SHV_E120K) || defined(CONFIG_KOR_MODEL_SHV_E120S) || defined(CONFIG_KOR_MODEL_SHV_E160S) || defined(CONFIG_KOR_MODEL_SHV_E160K) || defined(CONFIG_KOR_MODEL_SHV_E160L)
 	nRet = i2c_add_driver(&vibrator_i2c_driver);
 	if (nRet)
 	pr_err("%s: i2c_add_driver() failed err = %d\n", __func__, nRet);
@@ -574,6 +573,12 @@ static ssize_t write(struct file *file, const char *buf, size_t count,
         return 0;
     }
 
+    /* Check buffer size */
+	if ((count <= SPI_HEADER_SIZE) || (count > SPI_BUFFER_SIZE)) {
+        DbgOut((KERN_ERR "tspdrv: invalid write buffer size.\n"));
+        return 0;
+    }
+	
     /* Copy immediately the input buffer */
 	if (0 != copy_from_user(g_cWriteBuffer, buf, count)) {
         /* Failed to copy all the data, exit */
@@ -581,11 +586,6 @@ static ssize_t write(struct file *file, const char *buf, size_t count,
         return 0;
     }
 
-    /* Check buffer size */
-	if ((count <= SPI_HEADER_SIZE) || (count > SPI_BUFFER_SIZE)) {
-        DbgOut((KERN_ERR "tspdrv: invalid write buffer size.\n"));
-        return 0;
-    }
 
 	while (i < count) {
         int nIndexFreeBuffer;   /* initialized below */
@@ -770,8 +770,7 @@ static int suspend(struct platform_device *pdev, pm_message_t state)
 	
 			printk(KERN_ERR "[VIBTONZ] isa1200_early_suspend \n");
 		}
-#elif defined (CONFIG_KOR_SHV_E120L_HD720) || defined(CONFIG_KOR_MODEL_SHV_E120K) || defined(CONFIG_KOR_MODEL_SHV_E120S) || defined(CONFIG_KOR_MODEL_SHV_E160S)\
- || defined(CONFIG_KOR_MODEL_SHV_E160K) || defined(CONFIG_KOR_MODEL_SHV_E160L) ||  defined (CONFIG_KOR_MODEL_SHV_E120L) || defined (CONFIG_JPN_MODEL_SC_05D)
+#elif defined (CONFIG_KOR_SHV_E120L_HD720) || defined(CONFIG_KOR_MODEL_SHV_E120K) || defined(CONFIG_KOR_MODEL_SHV_E120S) || defined(CONFIG_KOR_MODEL_SHV_E160S) || defined(CONFIG_KOR_MODEL_SHV_E160K) || defined(CONFIG_KOR_MODEL_SHV_E160L) ||  defined (CONFIG_KOR_MODEL_SHV_E120L)
 		if(isa1200_enabled){
 			vibrator_write_register(0x30, 0x09);
 			gpio_set_value(VIB_EN, VIBRATION_OFF);				
@@ -842,6 +841,20 @@ static int resume(struct platform_device *pdev)
 			vibrator_write_register(0x31, 0x40);
 			vibrator_write_register(0x32, 0x00);
 			vibrator_write_register(0x33, 0x13);
+			vibrator_write_register(0x34, 0x05);
+			vibrator_write_register(0x35, 0x00);
+			vibrator_write_register(0x36, 0x00);
+			isa1200_enabled = 1;				
+		}
+
+		printk(KERN_ERR "[VIBTONZ] isa1200_late_resume \n");
+#elif defined  (CONFIG_KOR_MODEL_SHV_E160L)
+		if(!isa1200_enabled){
+			gpio_set_value(VIB_EN, VIBRATION_ON);		
+			vibrator_write_register(0x30, 0x09);
+			vibrator_write_register(0x31, 0x40);
+			vibrator_write_register(0x32, 0x00);
+			vibrator_write_register(0x33, 0x13);
 			vibrator_write_register(0x34, 0x02);
 			vibrator_write_register(0x35, 0x00);
 			vibrator_write_register(0x36, 0x00);
@@ -849,7 +862,7 @@ static int resume(struct platform_device *pdev)
 		}
 
 		printk(KERN_ERR "[VIBTONZ] isa1200_late_resume \n");
-#elif defined(CONFIG_KOR_MODEL_SHV_E160S) || defined(CONFIG_KOR_MODEL_SHV_E160K) || defined(CONFIG_KOR_MODEL_SHV_E160L) || defined (CONFIG_JPN_MODEL_SC_05D)
+#elif defined(CONFIG_KOR_MODEL_SHV_E160S) || defined(CONFIG_KOR_MODEL_SHV_E160K)
 		if(!isa1200_enabled){
 			gpio_set_value(VIB_EN, VIBRATION_ON);		
 			vibrator_write_register(0x30, 0x09);

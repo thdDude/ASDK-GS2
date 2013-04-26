@@ -397,10 +397,6 @@ static ssize_t do_write_log_from_user(struct logger_log *log,
 				      const void __user *buf, size_t count)
 {
 	size_t len;
-#ifdef BOOTPARAM_FILEIO
-	int matching = 0;
-	char *log_ch = STOP_LOG;
-#endif
 
 	len = min(count, log->size - log->w_off);
 	if (len && copy_from_user(log->buffer + log->w_off, buf, len))
@@ -416,28 +412,14 @@ static ssize_t do_write_log_from_user(struct logger_log *log,
 		    && log->buffer[logger_offset(log->w_off + 1)] == '@') {
 			char tmp[256];
 			int i;
-			for (i = 0; i < min(count, sizeof(tmp) - 1); i++) {
+			for (i = 0; i < min(count, sizeof(tmp) - 1); i++)
 				tmp[i] =
 				    log->buffer[logger_offset(log->w_off + i)];
-#ifdef BOOTPARAM_FILEIO
-				/* if log string is special, set a flag */
-				if (matching == i && i < STOP_LOG_LEN + 1 && tmp[i] == *(log_ch + i))
-					matching++;
-#endif
-			}
 			tmp[i] = '\0';
 			printk("%s\n", tmp);
-#ifdef BOOTPARAM_FILEIO
-			if (matching == STOP_LOG_LEN + 1) { // + 1 for NULL
-				printk("got an only-kernel-boot log!!\n");
-				if (modify_bootparam() < 0)
-					printk("modifying file error - boot param\n");
-				BUG(); /* to prevent writing /data partition */
-			}
-			printk("count : %d, matching : %d\n", count, matching);
-#endif
 		}
 	}
+
 	log->w_off = logger_offset(log->w_off + count);
 
 	return count;

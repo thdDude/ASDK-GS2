@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2012, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2009-2012, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -35,11 +35,6 @@
 #include <linux/syscalls.h>
 #include <linux/hrtimer.h>
 #include <linux/ion.h>
-
-#if (defined(CONFIG_TARGET_SERIES_P5LTE) || defined(CONFIG_TARGET_SERIES_P8LTE))
-#include "sec_cam_pmic.h"
-#endif
-
 DEFINE_MUTEX(ctrl_cmd_lock);
 
 #define CAMERA_STOP_VIDEO 58
@@ -651,6 +646,7 @@ static int __msm_pmem_table_del(struct msm_sync *sync,
 					pinfo->fd == region->info.fd) {
 				hlist_del(node);
 				spin_unlock_irqrestore(&sync->pmem_frame_spinlock, flags); //spinlock_test
+				
 #ifdef CONFIG_MSM_MULTIMEDIA_USE_ION
 				ion_free(client_for_ion, region->handle);
 #else
@@ -683,6 +679,7 @@ static int __msm_pmem_table_del(struct msm_sync *sync,
 				put_pmem_file(region->file);
 #endif
 				spin_lock_irqsave(&sync->pmem_frame_spinlock, flags);//spinlock_test
+
 				kfree(region);
 				CDBG("%s: type %d, vaddr  0x%p\n",
 					__func__, pinfo->type, pinfo->vaddr);
@@ -702,6 +699,7 @@ static int __msm_pmem_table_del(struct msm_sync *sync,
 					pinfo->fd == region->info.fd) {
 				hlist_del(node);
 				spin_unlock_irqrestore(&sync->pmem_stats_spinlock, flags); //spinlock_test
+				
 #ifdef CONFIG_MSM_MULTIMEDIA_USE_ION
 				ion_free(client_for_ion, region->handle);
 #else
@@ -3064,9 +3062,6 @@ static int __msm_release(struct msm_sync *sync)
 			sync->sctrl.s_release();
 			CDBG("%s, msm_camio_sensor_clk_off\n", __func__);
 			msm_camio_sensor_clk_off(sync->pdev);
-#if (defined(CONFIG_TARGET_SERIES_P5LTE) || defined(CONFIG_TARGET_SERIES_P8LTE))
-			cam_ldo_power_off();
-#endif
 			if (sync->sfctrl.strobe_flash_release) {
 				CDBG("%s, strobe_flash_release\n", __func__);
 				sync->sfctrl.strobe_flash_release(
@@ -3767,12 +3762,6 @@ static int __msm_open(struct msm_cam_device *pmsm, const char *const apps_id,
 		if (sync->vfefn.vfe_init) {
 			sync->pp_frame_avail = 0;
 			sync->get_pic_abort = 0;
-
-#if (defined(CONFIG_TARGET_SERIES_P5LTE) || defined(CONFIG_TARGET_SERIES_P8LTE))
-			// have to enable CAM LDOs before MCLK
-			cam_ldo_power_on(sync->sdata->sensor_name);
-#endif
-
 			rc = msm_camio_sensor_clk_on(sync->pdev);
 			if (rc < 0) {
 				pr_err("%s: setting sensor clocks failed: %d\n",
@@ -4119,17 +4108,12 @@ int msm_camera_drv_start(struct platform_device *dev,
 
 	pmsm = kzalloc(sizeof(struct msm_cam_device) * 4 +
 			sizeof(struct msm_sync), GFP_ATOMIC);
-	if (!pmsm) {
-		printk(KERN_ERR "%s: create class failed.\n", __func__);	//request SM
-		class_destroy(msm_class);
+	if (!pmsm)
 		return -ENOMEM;
-	}
 	sync = (struct msm_sync *)(pmsm + 4);
 
 	rc = msm_sync_init(sync, dev, sensor_probe);
 	if (rc < 0) {
-		printk(KERN_ERR "%s: create class failed..\n", __func__);	//request SM
-		class_destroy(msm_class);
 		kfree(pmsm);
 		return rc;
 	}
@@ -4137,8 +4121,6 @@ int msm_camera_drv_start(struct platform_device *dev,
 	CDBG("%s: setting camera node %d\n", __func__, camera_node);
 	rc = msm_device_init(pmsm, sync, camera_node);
 	if (rc < 0) {
-		printk(KERN_ERR "%s: create class failed...\n", __func__);	//request SM
-		class_destroy(msm_class);
 		msm_sync_destroy(sync);
 		kfree(pmsm);
 		return rc;

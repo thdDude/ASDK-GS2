@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2012, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2009-2012, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -2755,6 +2755,20 @@ static int __init msm_otg_probe(struct platform_device *pdev)
 		else
 			debug_bus_voting_enabled = true;
 	}
+#ifdef CONFIG_USB_HOST_NOTIFY
+#define NOTIFY_DRIVER_NAME "usb_otg"
+	motg->ndev.name = NOTIFY_DRIVER_NAME;
+	motg->ndev.set_booster = &msm_otg_set_id_state_pbatest;
+	ret = host_notify_dev_register(&motg->ndev);
+	if (ret) {
+		dev_err(&pdev->dev, "Failed to host_notify_dev_register\n");
+		goto remove_otg;
+	} else {
+		dev_info(&pdev->dev, "success to host_notify_dev_register\n");
+	}
+	INIT_WORK(&motg->notify_work, msm_otg_notify_work);
+	motg->notify_state = ACC_POWER_OFF;
+#endif
 
 #ifdef CONFIG_USB_HOST_NOTIFY
 #define NOTIFY_DRIVER_NAME "usb_otg"

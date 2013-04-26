@@ -403,12 +403,13 @@ config SENSORS_AK8975
 	  If you say yes here you get support for Asahi Kasei's
 	  orientation sensor AK8975.
 
+
 config USE_A2220_B
 	tristate "A2220_B Voice Processor Driver"
 	depends on I2C
 	help
 	  This option support audience A2220_B chip
-	  
+
 config EP93XX_PWM
 	tristate "EP93xx PWM support"
 	depends on ARCH_EP93XX
@@ -607,6 +608,14 @@ config PMIC8058_PWM
 	  purposes including software controlled brightness of backlight,
 	  motor control, and waveform generation.
 
+config PMIC8XXX_VIBRATOR
+	tristate "Qualcomm Vibrator support for PMIC8XXX"
+	depends on MFD_PM8XXX && ANDROID_TIMED_OUTPUT
+	help
+	  This option enables device driver support for the vibrator
+	  on the PM8XXX chips. The vibrator is controlled using the
+	  timed output class.
+
 config PMIC8XXX_NFC
 	tristate "Qualcomm PM8XXX support for Near Field Communication"
 	depends on MFD_PM8XXX
@@ -681,25 +690,10 @@ menuconfig VIBETONZ
         default m
         help
           Say Y to enable Vibetonz support.
-	  
-
-config PN544
-        bool "NXP PN544 NFC Controller Driver"
-        default y
-        help
-          NXP PN544 Near Field Communication controller support.
-
 config STMPE811_ADC
 	bool "stmpe811 adc driver"
 	default n
 	help
 	  stmpe811 adc driver
           
-config GENERIC_BLN
-    bool "Generic BLN support for backlight notification"
-    default n
-    help
-      Say Y here to enable the backlight notification
-      for android led-notification (modified liblight needed)
-
 endif # MISC_DEVICES

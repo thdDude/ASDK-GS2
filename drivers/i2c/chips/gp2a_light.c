@@ -36,12 +36,15 @@
 #include <mach/vreg.h>
 #include <linux/workqueue.h>
 
+#ifdef SENSORS_LOG_DUMP
+#include <linux/i2c/sensors_core.h>
+#endif
 
 /* for debugging */
 #define DEBUG 0
 
 /*********** for debug **********************************************************/
-#if 1 
+#if 0 
 #define gprintk(fmt, x... ) printk( "%s(%d): " fmt, __FUNCTION__ ,__LINE__, ## x)
 #else
 #define gprintk(x...) do { } while (0)
@@ -54,7 +57,7 @@
 #define ABS_WAKE                        (ABS_MISC)
 #define ABS_CONTROL_REPORT              (ABS_THROTTLE)
 
-#if defined(CONFIG_KOR_MODEL_SHV_E160S) || defined(CONFIG_KOR_MODEL_SHV_E160K) || defined(CONFIG_KOR_MODEL_SHV_E160L) || defined (CONFIG_JPN_MODEL_SC_05D) || defined(CONFIG_KOR_MODEL_SHV_E150S)
+#if defined(CONFIG_KOR_MODEL_SHV_E160S) || defined(CONFIG_KOR_MODEL_SHV_E160K) || defined(CONFIG_KOR_MODEL_SHV_E160L)
 #define LIGHT_BUFFER_NUM	7
 #else
 #define LIGHT_BUFFER_UP	5
@@ -81,7 +84,7 @@ struct sensor_data {
 	int testmode;
 	int light_buffer;
 	int light_count;
-#if !defined(CONFIG_KOR_MODEL_SHV_E160S) && !defined(CONFIG_KOR_MODEL_SHV_E160K) && !defined(CONFIG_KOR_MODEL_SHV_E160L) && !defined (CONFIG_JPN_MODEL_SC_05D) && !defined(CONFIG_KOR_MODEL_SHV_E150S)
+#if !defined(CONFIG_KOR_MODEL_SHV_E160S) && !defined(CONFIG_KOR_MODEL_SHV_E160K) && !defined(CONFIG_KOR_MODEL_SHV_E160L)
 	int light_level_state;
 	bool light_first_level;
 #endif
@@ -100,13 +103,6 @@ static const int adc_table[4] = {
 	798,
 	1240,
 	1673,
-};
-#elif defined(CONFIG_USA_MODEL_SGH_I717)
-static const int adc_table[4] = {
-	343,
-	767,
-	1208,
-	1632,
 };
 #else
 static const int adc_table[4] = {
@@ -216,17 +212,10 @@ static int StateToLux(state_type state)
 static ssize_t lightsensor_file_state_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
-	struct input_dev *input_data = to_input_dev(dev);
-	struct sensor_data *data = input_get_drvdata(input_data);
 	int adc = 0;
 
-	if (data->enabled) {
-		adc = lightsensor_get_adcvalue();
-		printk("%s : adc(%d)\n", __func__, adc);
-	} else {
-		adc = 0;
-		printk("%s : lightsensor disabled\n", __func__);
-	}
+	adc = lightsensor_get_adcvalue();
+	printk("%s : adc(%d)\n",__func__, adc);
 
 	return sprintf(buf, "%d\n", adc);
 }
@@ -277,8 +266,10 @@ light_delay_store(struct device *dev,
 	delay = delay / 1000000;	//ns to msec 
 	#endif
 	
-
+	pr_info("%s, new_delay = %d, old_delay = %d", __func__, delay,
+	       data->delay);
 	       
+
 	if (SENSOR_MAX_DELAY < delay) {
 		delay = SENSOR_MAX_DELAY;
 	}
@@ -291,10 +282,9 @@ light_delay_store(struct device *dev,
 	{
 		cancel_delayed_work_sync(&data->work);
 		queue_delayed_work(light_workqueue,&data->work,msecs_to_jiffies(delay));
-		pr_info("%s, new_delay = %d, old_delay = %d", __func__, delay,
-	       data->delay);
 	}
 
+	input_report_abs(input_data, ABS_CONTROL_REPORT, (data->delay<<16) | delay);
 
 	mutex_unlock(&data->mutex);
 
@@ -342,7 +332,7 @@ light_enable_store(struct device *dev,
 		gprintk("timer started.\n");
 	}
 
-
+	input_report_abs(input_data, ABS_CONTROL_REPORT, (value<<16) | data->delay);
 
 	mutex_unlock(&data->mutex);
 
@@ -411,8 +401,10 @@ static ssize_t light_autobrightness_show(struct device *dev, struct device_attri
 			sum += adc;
 		}
 		adc = sum/10;
+		gprintk("called %s  - subdued alarm(adc : %d)\n", __func__, adc);
 		return sprintf(buf,"%d\n", adc);
 	} else {
+		gprintk("called %s  - *#0589#\n", __func__);
 		return sprintf(buf,"%d\n", cur_adc_value);
 	}
 }
@@ -526,11 +518,13 @@ lightsensor_resume(struct platform_device *pdev)
 {
 	struct sensor_data *data = input_get_drvdata(this_data);
 	int rt = 0;
+
 	data->light_count = 0;
 	data->light_buffer = 0;
-#if !defined(CONFIG_KOR_MODEL_SHV_E160S) && !defined(CONFIG_KOR_MODEL_SHV_E160K) && !defined(CONFIG_KOR_MODEL_SHV_E160L)  && !defined (CONFIG_JPN_MODEL_SC_05D) && !defined(CONFIG_KOR_MODEL_SHV_E150S)
+#if !defined(CONFIG_KOR_MODEL_SHV_E160S) && !defined(CONFIG_KOR_MODEL_SHV_E160K) && !defined(CONFIG_KOR_MODEL_SHV_E160L)
 	data->light_first_level =true;
 #endif
+
 	mutex_lock(&data->mutex);
 
 	if (data->enabled) {
@@ -600,17 +594,12 @@ static void gp2a_work_func_light(struct work_struct *work)
 
 	adc = lightsensor_get_adcvalue();
 
-#if defined(CONFIG_USA_MODEL_SGH_I717) || defined(CONFIG_USA_MODEL_SGH_I727) || defined(CONFIG_USA_MODEL_SGH_T989) || defined(CONFIG_JPN_MODEL_SC_05D)
-	input_report_abs(this_data, ABS_MISC, adc);
-	input_sync(this_data);
-#else
-
 	for (i = 0; ARRAY_SIZE(adc_table); i++)
 		if (adc <= adc_table[i])
 			break;
 
 	if (data->light_buffer == i) {
-#if defined(CONFIG_KOR_MODEL_SHV_E160S) || defined(CONFIG_KOR_MODEL_SHV_E160K) || defined(CONFIG_KOR_MODEL_SHV_E160L) || defined (CONFIG_JPN_MODEL_SC_05D) || defined(CONFIG_KOR_MODEL_SHV_E150S)
+#if defined(CONFIG_KOR_MODEL_SHV_E160S) || defined(CONFIG_KOR_MODEL_SHV_E160K) || defined(CONFIG_KOR_MODEL_SHV_E160L)
 		if (data->light_count++ == LIGHT_BUFFER_NUM) {
 			input_report_abs(this_data, ABS_MISC, adc);
 			input_sync(this_data);
@@ -621,7 +610,9 @@ static void gp2a_work_func_light(struct work_struct *work)
 		if(data->light_level_state <= i || data->light_first_level == true){
 			if (data->light_count++ == LIGHT_BUFFER_UP) {
                 if (LightSensor_Log_Cnt == 10) {
+                    #ifndef CONFIG_USA_MODEL_SGH_T989
                     printk("[LIGHT SENSOR] lux up 0x%0X (%d)\n", adc, adc);
+                    #endif
                     LightSensor_Log_Cnt = 0; 
                 }
 
@@ -652,7 +643,7 @@ static void gp2a_work_func_light(struct work_struct *work)
 		data->light_buffer = i;
 		data->light_count = 0;
 }
-#endif
+
 	if(data->enabled)
 		queue_delayed_work(light_workqueue,&data->work, msecs_to_jiffies(data->delay));
 }
@@ -665,22 +656,25 @@ lightsensor_probe(struct platform_device *pdev)
 	struct input_dev *input_data = NULL;
 	int input_registered = 0, sysfs_created = 0;
 	int rt;
+	int which;
 
 	data = kzalloc(sizeof(struct sensor_data), GFP_KERNEL);
 	if (!data) {
 		rt = -ENOMEM;
+		which = 1;
 		goto err;
 	}
 	data->enabled = 0;
 	data->delay = SENSOR_DEFAULT_DELAY;
 	data->testmode = 0;
-#if !defined(CONFIG_JPN_MODEL_SC_05D) && !defined(CONFIG_USA_MODEL_SGH_I717) && !defined(CONFIG_KOR_MODEL_SHV_E160S) && !defined(CONFIG_KOR_MODEL_SHV_E160K) && !defined(CONFIG_KOR_MODEL_SHV_E160L) && !defined(CONFIG_KOR_MODEL_SHV_E150S)
+#if !defined(CONFIG_KOR_MODEL_SHV_E160S) && !defined(CONFIG_KOR_MODEL_SHV_E160K) && !defined(CONFIG_KOR_MODEL_SHV_E160L)
 	data->light_level_state =0;
 #endif
 
 	light_workqueue = create_singlethread_workqueue("klightd");
 	if (!light_workqueue) {
 		rt = -ENOMEM;
+		which = 2;
 		printk(KERN_ERR "%s: Failed to allocate work queue\n", __func__);
 		goto err;
 	}
@@ -690,6 +684,7 @@ lightsensor_probe(struct platform_device *pdev)
 	input_data = input_allocate_device();
 	if (!input_data) {
 		rt = -ENOMEM;
+		which = 3;
 		printk(KERN_ERR
 			"sensor_probe: Failed to allocate input_data device\n");
 		goto err;
@@ -707,6 +702,7 @@ lightsensor_probe(struct platform_device *pdev)
 
 	rt = input_register_device(input_data);
 	if (rt) {
+		which = 4;
 		printk(KERN_ERR
 			"sensor_probe: Unable to register input_data device: %s\n",
 			input_data->name);
@@ -718,6 +714,7 @@ lightsensor_probe(struct platform_device *pdev)
 	rt = sysfs_create_group(&input_data->dev.kobj,
 				&lightsensor_attribute_group);
 	if (rt) {
+		which = 5;
 		printk(KERN_ERR
 			"sensor_probe: sysfs_create_group failed[%s]\n",
 			input_data->name);
@@ -733,6 +730,7 @@ lightsensor_probe(struct platform_device *pdev)
 
 	data->lightsensor_class = class_create(THIS_MODULE, "lightsensor");
 	if (IS_ERR(data->lightsensor_class)) {
+		which = 6;
 		pr_err("%s: could not create lightsensor_class\n", __func__);
 		goto err;
 	}
@@ -740,18 +738,25 @@ lightsensor_probe(struct platform_device *pdev)
 	data->switch_cmd_dev = device_create(data->lightsensor_class,
 						NULL, 0, NULL, "switch_cmd");
 	if (IS_ERR(data->switch_cmd_dev)) {
+		which = 7;
 		pr_err("%s: could not create switch_cmd_dev\n", __func__);
 		goto err_light_device_create;
 	}
 
 	if (device_create_file(data->switch_cmd_dev,
 		&dev_attr_lightsensor_file_state) < 0) {
+		which = 8;
 		pr_err("%s: could not create device file(%s)!\n", __func__,
 			dev_attr_lightsensor_file_state.attr.name);
 		goto err_light_device_create_file;
 	}
 	dev_set_drvdata(data->switch_cmd_dev, data);
 	
+	
+#ifdef SENSORS_LOG_DUMP
+	sensors_status_set_light(0, 0);
+#endif
+
 	return 0;
 
 err_light_device_create_file:
@@ -771,8 +776,16 @@ err:
 				input_free_device(input_data);
 			input_data = NULL;
 		}
+
+		if(light_workqueue)
+			destroy_workqueue(light_workqueue);
+		
 		kfree(data);
 	}
+#ifdef SENSORS_LOG_DUMP
+	sensors_status_set_light(which, rt);
+#endif
+
 	return rt;
 }
 
@@ -784,8 +797,7 @@ static int lightsensor_remove(struct platform_device *pdev)
 	rt = 0;
 	if (this_data != NULL) {
 		data = input_get_drvdata(this_data);
-		if (data != NULL)
-			data->enabled = 0;
+		data->enabled = 0;
 		sysfs_remove_group(&this_data->dev.kobj,
 				&lightsensor_attribute_group);
 		if (data != NULL) {
@@ -811,8 +823,7 @@ lightsensor_shutdown(struct platform_device *pdev)
 	rt = 0;
 	if (this_data != NULL) {
 		data = input_get_drvdata(this_data);
-		if (data != NULL)
-			data->enabled = 0;
+		data->enabled = 0;
 		sysfs_remove_group(&this_data->dev.kobj,
 				&lightsensor_attribute_group);
 		if (data != NULL) {

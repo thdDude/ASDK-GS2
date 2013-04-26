@@ -328,7 +328,9 @@ static int check_for_cp_boot(void)
 #endif
 
 //To prevent lock up during getting parameter about switch_sel.
+#ifdef CONFIG_SEC_MISC
 static int gRetryCount=0;
+#endif
 
 static void sec_switch_init_work(struct work_struct *work)
 {
@@ -413,10 +415,10 @@ static int sec_switch_probe(struct platform_device *pdev)
 
 	secsw->pdata = pdata;
 	
-#if defined (CONFIG_TARGET_LOCALE_US_ATT_REV01) || defined(CONFIG_KOR_MODEL_SHV_E160S)|| defined (CONFIG_KOR_MODEL_SHV_E160K) || defined (CONFIG_KOR_MODEL_SHV_E160L) || defined (CONFIG_JPN_MODEL_SC_05D)
+#if defined (CONFIG_TARGET_LOCALE_US_ATT_REV01) || defined(CONFIG_KOR_MODEL_SHV_E160S)|| defined (CONFIG_KOR_MODEL_SHV_E160K) || defined (CONFIG_KOR_MODEL_SHV_E160L)
 	secsw->switch_sel = 3;
 #else
-	secsw->switch_sel = 1;
+	secsw->switch_sel = 3;
 #endif
 
 	dev_set_drvdata(switch_dev, secsw);

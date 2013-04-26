@@ -24,11 +24,10 @@
 #include <linux/kthread.h>
 #include <linux/mutex.h>
 #include <linux/freezer.h>
-#include <linux/usb/otg.h>
 #ifdef CONFIG_USB_HOST_NOTIFY
 #include <linux/host_notify.h>
 #include <linux/usb/otg.h>
-#include <linux/usb/msm_hsusb.h>
+//#include <linux/usb/msm_hsusb.h>
 #endif
 #include <linux/random.h>
 
@@ -1783,10 +1782,6 @@ static inline void announce_device(struct usb_device *udev) { }
 #include "otg_whitelist.h"
 #endif
 
-#ifdef	CONFIG_USB_SEC_WHITELIST
-#include "sec_whitelist.h"
-#endif
-
 /**
  * usb_enumerate_device_otg - FIXME (usbcore-internal)
  * @udev: newly addressed device (in ADDRESS state)
@@ -1796,13 +1791,6 @@ static inline void announce_device(struct usb_device *udev) { }
 static int usb_enumerate_device_otg(struct usb_device *udev)
 {
 	int err = 0;
-
-#ifdef CONFIG_USB_SEC_WHITELIST
-	if (!is_seclist(udev, 1)) {
-		err = -ENOTSUPP;
-		goto sec_fail;
-	}
-#endif
 
 #ifdef	CONFIG_USB_OTG
 	/*
@@ -1889,9 +1877,6 @@ out:
 		schedule_delayed_work(&udev->bus->hnp_polling,
 			msecs_to_jiffies(THOST_REQ_POLL));
 	}
-#endif
-#ifdef	CONFIG_USB_SEC_WHITELIST
-sec_fail:
 #endif
 	return err;
 }

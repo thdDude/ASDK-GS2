@@ -176,11 +176,6 @@ struct usb_hcd {
 	struct host_notify_dev ndev;
 	int host_notify;
 #endif
-	
-#ifdef CONFIG_USB_SEC_WHITELIST
-	int sec_whlist_table_num;
-#endif
-
 	/* more shared queuing code would be good; it should support
 	 * smarter scheduling, handle transaction translators, etc;
 	 * input size of periodic table to an interrupt scheduler.

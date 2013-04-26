@@ -25,6 +25,10 @@
 #include <linux/i2c/k3g.h>
 #include <linux/delay.h>
 #include <mach/gpio.h>
+#ifdef SENSORS_LOG_DUMP
+#include <linux/i2c/sensors_core.h>
+#endif
+
 
 /* k3g chip id */
 #define DEVICE_ID	0xD3
@@ -90,8 +94,7 @@
 									GPIO_CFG_PULL_UP, GPIO_CFG_8MA), GPIO_CFG_ENABLE);
 #endif
 
-#if defined (CONFIG_KOR_MODEL_SHV_E120L)||defined (CONFIG_KOR_MODEL_SHV_E120S)||defined(CONFIG_KOR_MODEL_SHV_E120K) || defined (CONFIG_KOR_MODEL_SHV_E160S)\
- || defined (CONFIG_KOR_MODEL_SHV_E160K) || defined (CONFIG_KOR_MODEL_SHV_E160L) || defined (CONFIG_JPN_MODEL_SC_05D) 
+#if defined (CONFIG_KOR_MODEL_SHV_E120L)||defined (CONFIG_KOR_MODEL_SHV_E120S)||defined(CONFIG_KOR_MODEL_SHV_E120K) || defined (CONFIG_KOR_MODEL_SHV_E160S) || defined (CONFIG_KOR_MODEL_SHV_E160K) || defined (CONFIG_KOR_MODEL_SHV_E160L)
 #define SENSOR_GYRO_SCL 39
 #define SENSOR_GYRO_SDA 38
 #endif
@@ -210,7 +213,7 @@ static void set_polling_delay(struct k3g_data *k3g_data, int res)
 	k3g_data->polling_delay = ns_to_ktime(delay_ns);
 }
 
-#if defined (CONFIG_KOR_MODEL_SHV_E110S) || defined (CONFIG_KOR_MODEL_SHV_E160S) || defined (CONFIG_KOR_MODEL_SHV_E160K) || defined (CONFIG_KOR_MODEL_SHV_E160L) || defined (CONFIG_JPN_MODEL_SC_05D) 
+#if defined (CONFIG_KOR_MODEL_SHV_E110S) || defined (CONFIG_KOR_MODEL_SHV_E160S) || defined (CONFIG_KOR_MODEL_SHV_E160K) || defined (CONFIG_KOR_MODEL_SHV_E160L)
 extern unsigned int get_hw_rev(void);
 #endif
 
@@ -260,7 +263,7 @@ static int k3g_read_gyro_values(struct i2c_client *client, struct k3g_t *data, i
 		data->y = ((gyro_data[5] << 8) | gyro_data[4]);
 	} else
 #endif
-#if defined (CONFIG_KOR_MODEL_SHV_E160S) || defined (CONFIG_KOR_MODEL_SHV_E160K) || defined (CONFIG_JPN_MODEL_SC_05D) 
+#if defined (CONFIG_KOR_MODEL_SHV_E160S) || defined (CONFIG_KOR_MODEL_SHV_E160K)
     if (get_hw_rev() >= 0x01 )
     {
     
@@ -276,7 +279,7 @@ static int k3g_read_gyro_values(struct i2c_client *client, struct k3g_t *data, i
     if (get_hw_rev() >= 0x01 )
     {
         data->x = -((gyro_data[1] << 8) | gyro_data[0]);
-        data->z = ((gyro_data[3] << 8) | gyro_data[2]);
+        data->z = -((gyro_data[3] << 8) | gyro_data[2]);
         data->y = -((gyro_data[5] << 8) | gyro_data[4]);
     } else
 #endif
@@ -837,7 +840,7 @@ static ssize_t k3g_self_test(struct device *dev, struct device_attribute *attr, 
 
 #if defined (CONFIG_KOR_MODEL_SHV_E110S) \
 || defined (CONFIG_KOR_MODEL_SHV_E120S) || defined (CONFIG_KOR_MODEL_SHV_E120K) || defined (CONFIG_KOR_MODEL_SHV_E120L) || defined(CONFIG_KOR_MODEL_SHV_E160S) || defined (CONFIG_KOR_MODEL_SHV_E160K) || defined (CONFIG_KOR_MODEL_SHV_E160L) \
-|| defined (CONFIG_JPN_MODEL_SC_03D) || defined (CONFIG_USA_MODEL_SGH_I717) || defined (CONFIG_USA_MODEL_SGH_I727) || defined (CONFIG_USA_MODEL_SGH_T989) || defined(CONFIG_USA_MODEL_SGH_I757) || defined (CONFIG_JPN_MODEL_SC_05D) 
+|| defined (CONFIG_JPN_MODEL_SC_03D) || defined (CONFIG_USA_MODEL_SGH_I717) || defined (CONFIG_USA_MODEL_SGH_I727) || defined (CONFIG_USA_MODEL_SGH_T989) || defined(CONFIG_USA_MODEL_SGH_I757)
 
 	/* Initialize Sensor, turn on sensor, enable P/R/Y */
 	/*CTRL_REG1= 0x6F (210Hz with Fc=50Hz, normal mode)
@@ -910,8 +913,8 @@ static ssize_t k3g_self_test(struct device *dev, struct device_attribute *attr, 
 		msleep(20);
 	}
 	
-	for (k = 0; k < 8; k++) {//fifo 메모리 read 8회 반복
-		for (j = 0; j < 10; j++) {//reg_read_ fail시  retry 10회
+	for (k = 0; k < 8; k++) {//fifo 貧 read 8회 趺
+		for (j = 0; j < 10; j++) {//reg_read_ fail  retry 10회
             err = i2c_smbus_read_i2c_block_data(data->client, AXISDATA_REG | AC, sizeof(gyro_fifo_test_data[k]), gyro_fifo_test_data[k]);
 			if (err >= 0)
 				break;
@@ -1149,7 +1152,7 @@ exit:
 
 #if defined (CONFIG_KOR_MODEL_SHV_E110S) \
 || defined (CONFIG_KOR_MODEL_SHV_E120S) || defined (CONFIG_KOR_MODEL_SHV_E120K) || defined (CONFIG_KOR_MODEL_SHV_E120L) || defined(CONFIG_KOR_MODEL_SHV_E160S) || defined (CONFIG_KOR_MODEL_SHV_E160K) || defined (CONFIG_KOR_MODEL_SHV_E160L) \
-|| defined (CONFIG_JPN_MODEL_SC_03D) || defined (CONFIG_USA_MODEL_SGH_I717) || defined (CONFIG_USA_MODEL_SGH_I727) || defined (CONFIG_USA_MODEL_SGH_T989) || defined(CONFIG_USA_MODEL_SGH_I757) || defined (CONFIG_JPN_MODEL_SC_05D) 
+|| defined (CONFIG_JPN_MODEL_SC_03D) || defined (CONFIG_USA_MODEL_SGH_I717) || defined (CONFIG_USA_MODEL_SGH_I727) || defined (CONFIG_USA_MODEL_SGH_T989) || defined(CONFIG_USA_MODEL_SGH_I757)
     return sprintf(buf, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
         NOST[0], NOST[1], NOST[2], ST[0], ST[1], ST[2], pass,
     	zero_rate_test,zero_rate_data[0],zero_rate_data[1],zero_rate_data[2]);
@@ -1175,7 +1178,7 @@ static const struct file_operations k3g_fops = {
 static int k3g_probe(struct i2c_client *client,  const struct i2c_device_id *devid)
 {
 	int ret;
-	int err = 0;
+	int err = 0, which = 0;
 	struct k3g_data *data;
 	struct input_dev *input_dev;
 	struct k3g_platform_data *pdata = client->dev.platform_data;
@@ -1185,6 +1188,7 @@ static int k3g_probe(struct i2c_client *client,  const struct i2c_device_id *dev
 	if (pdata == NULL) {
 		dev_err(&client->dev, "platform data is NULL. exiting.\n");
 		err = -ENODEV;
+		which = 0x01;
 		goto exit_platform_data_null;
 	}
 
@@ -1192,6 +1196,7 @@ static int k3g_probe(struct i2c_client *client,  const struct i2c_device_id *dev
 	if (data == NULL) {
 		dev_err(&client->dev, "failed to allocate memory for module data\n");
 		err = -ENOMEM;
+		which = 0x02;
 		goto exit;
 	}
 
@@ -1215,6 +1220,7 @@ static int k3g_probe(struct i2c_client *client,  const struct i2c_device_id *dev
 			pr_err("%s : Device identification failed\n", __func__);
 			err = -ENODEV;
 		}
+		which = 0x03;
 		goto err_read_reg;
 	}
 
@@ -1225,6 +1231,7 @@ static int k3g_probe(struct i2c_client *client,  const struct i2c_device_id *dev
 	if (!input_dev) {
 		pr_err("%s: could not allocate input device\n", __func__);
 		err = -ENOMEM;
+		which = 0x04;
 		goto err_input_allocate_device;
 	}
 
@@ -1246,6 +1253,7 @@ static int k3g_probe(struct i2c_client *client,  const struct i2c_device_id *dev
 	if (err < 0) {
 		pr_err("%s: could not register input device\n", __func__);
 		input_free_device(data->input_dev);
+		which = 0x05;
 		goto err_input_register_device;
 	}
 
@@ -1256,6 +1264,7 @@ static int k3g_probe(struct i2c_client *client,  const struct i2c_device_id *dev
 		err = request_threaded_irq(data->client->irq, NULL, k3g_interrupt_thread, IRQF_TRIGGER_HIGH | IRQF_ONESHOT,	"k3g", data);
 		if (err < 0) {
 			pr_err("%s: can't allocate irq.\n", __func__);
+			which = 0x06;
 			goto err_request_irq;
 		}
 		disable_irq(data->client->irq);
@@ -1278,19 +1287,22 @@ static int k3g_probe(struct i2c_client *client,  const struct i2c_device_id *dev
 		if (!data->k3g_wq) {
 			err = -ENOMEM;
 			pr_err("%s: could not create workqueue\n", __func__);
+			which = 0x07;
 			goto err_create_workqueue;
 		}
 		/* this is the thread function we run on the work queue */
 		INIT_WORK(&data->work, k3g_work_func);
 	}
 
-	if (device_create_file(&input_dev->dev,	&dev_attr_enable) < 0) {
+	if ((err = device_create_file(&input_dev->dev,	&dev_attr_enable)) < 0) {
 		pr_err("%s: Failed to create device file(%s)!\n", __func__,	dev_attr_enable.attr.name);
+		which = 0x08;
 		goto err_device_create_file;
 	}
 
-	if (device_create_file(&input_dev->dev,	&dev_attr_poll_delay) < 0) {
+	if ((err = device_create_file(&input_dev->dev,	&dev_attr_poll_delay)) < 0) {
 		pr_err("%s: Failed to create device file(%s)!\n", __func__,	dev_attr_poll_delay.attr.name);
+		which = 0x09;
 		goto err_device_create_file2;
 	}
 
@@ -1301,6 +1313,7 @@ static int k3g_probe(struct i2c_client *client,  const struct i2c_device_id *dev
 	err = register_chrdev(K3G_MAJOR, "k3g", &k3g_fops);
 	if (err < 0) {
 		pr_err("%s: Failed to register chrdev(k3g)\n", __func__);
+		which = 0x0a;
 		goto err_register_chrdev;
 	}
 
@@ -1309,6 +1322,7 @@ static int k3g_probe(struct i2c_client *client,  const struct i2c_device_id *dev
 	if (IS_ERR(data->k3g_gyro_dev_class)) {
 		pr_err("%s: Failed to create class(K3G_GYRO-dev\n", __func__);
 		err = PTR_ERR(data->k3g_gyro_dev_class);
+		which = 0x0b;
 		goto err_class_create;
 	}
 
@@ -1319,35 +1333,39 @@ static int k3g_probe(struct i2c_client *client,  const struct i2c_device_id *dev
 	if (IS_ERR(data->dev)) {
 		pr_err("%s: Failed to create device(k3g)\n", __func__);
 		err = PTR_ERR(data->dev);
+		which = 0x0c;
 		goto err_device_create;
 	}
 
-	if (device_create_file(data->dev, &dev_attr_gyro_power_on) < 0) {
+	if ((err = device_create_file(data->dev, &dev_attr_gyro_power_on)) < 0) {
 		pr_err("%s: Failed to create device file(%s)!\n", __func__,	dev_attr_gyro_power_on.attr.name);
 		goto device_create_file3;
 	}
 
-	if (device_create_file(data->dev, &dev_attr_gyro_get_temp) < 0) {
+	if ((err = device_create_file(data->dev, &dev_attr_gyro_get_temp)) < 0) {
 		pr_err("%s: Failed to create device file(%s)!\n", __func__,	dev_attr_gyro_get_temp.attr.name);
 		goto device_create_file4;
 	}
 
-	if (device_create_file(data->dev, &dev_attr_gyro_selftest) < 0) {
+	if ((err = device_create_file(data->dev, &dev_attr_gyro_selftest)) < 0) {
 		pr_err("%s: Failed to create device file(%s)!\n", __func__,	dev_attr_gyro_selftest.attr.name);
 		goto device_create_file5;
 	}
 
-	if (device_create_file(data->dev, &dev_attr_gyro_selftest_dps) < 0) {
+	if ((err = device_create_file(data->dev, &dev_attr_gyro_selftest_dps)) < 0) {
 		pr_err("%s: Failed to create device file(%s)!\n", __func__,	dev_attr_gyro_selftest_dps.attr.name);
 		goto device_create_file6;
 	}
 
-	if (device_create_file(data->dev, &dev_attr_gyro_power_off) < 0) {
+	if ((err = device_create_file(data->dev, &dev_attr_gyro_power_off)) < 0) {
 		pr_err("%s: Failed to create device file(%s)!\n", __func__,	dev_attr_gyro_power_off.attr.name);
 		goto device_create_file7;
 	}
 	
 	dev_set_drvdata(data->dev, data);
+#ifdef SENSORS_LOG_DUMP
+	sensors_status_set_gyro(0, 0);
+#endif
 
 	return 0;
 
@@ -1361,6 +1379,7 @@ device_create_file4:
 	device_remove_file(data->dev, &dev_attr_gyro_power_on);
 device_create_file3:
 	device_destroy(data->k3g_gyro_dev_class, MKDEV(K3G_MAJOR, 0));
+	which = 0x0d;
 err_device_create:
 	class_destroy(data->k3g_gyro_dev_class);
 err_class_create:
@@ -1371,13 +1390,14 @@ err_device_create_file2:
 	device_remove_file(&input_dev->dev, &dev_attr_enable);
 err_device_create_file:
 	if (data->interruptible) {
-		enable_irq(data->client->irq);
 		free_irq(data->client->irq, data);
-	} else
+	} else {
+		destroy_work_on_stack(&data->work);
 		destroy_workqueue(data->k3g_wq);
-	input_unregister_device(data->input_dev);
+	}
 err_create_workqueue:
 err_request_irq:
+	input_unregister_device(data->input_dev);
 err_input_register_device:
 err_input_allocate_device:
 	mutex_destroy(&data->lock);
@@ -1387,6 +1407,10 @@ err_read_reg:
 	kfree(data);
 exit_platform_data_null:
 exit:
+	
+#ifdef SENSORS_LOG_DUMP
+	sensors_status_set_gyro(which, err);
+#endif
 	return err;
 }
 
@@ -1445,8 +1469,7 @@ static int k3g_suspend(struct device *dev)
 	if(k3g_data->power_off)
 		k3g_data->power_off();
     
-#if defined (CONFIG_KOR_MODEL_SHV_E120L)||defined (CONFIG_KOR_MODEL_SHV_E120S)||defined(CONFIG_KOR_MODEL_SHV_E120K)||defined (CONFIG_KOR_MODEL_SHV_E160S) \
-|| defined (CONFIG_KOR_MODEL_SHV_E160K) || defined (CONFIG_KOR_MODEL_SHV_E160L) || defined (CONFIG_JPN_MODEL_SC_05D) 
+#if defined (CONFIG_KOR_MODEL_SHV_E120L)||defined (CONFIG_KOR_MODEL_SHV_E120S)||defined(CONFIG_KOR_MODEL_SHV_E120K)||defined (CONFIG_KOR_MODEL_SHV_E160S) || defined (CONFIG_KOR_MODEL_SHV_E160K) || defined (CONFIG_KOR_MODEL_SHV_E160L)
 			 gpio_direction_input(SENSOR_GYRO_SCL);
 			 gpio_direction_input(SENSOR_GYRO_SDA);
 			 gpio_free(SENSOR_GYRO_SCL);
@@ -1461,8 +1484,7 @@ static int k3g_resume(struct device *dev)
 	struct i2c_client *client = to_i2c_client(dev);
 	struct k3g_data *k3g_data = i2c_get_clientdata(client);
 
-#if defined (CONFIG_KOR_MODEL_SHV_E120L)||defined (CONFIG_KOR_MODEL_SHV_E120S)||defined(CONFIG_KOR_MODEL_SHV_E120K)||defined (CONFIG_KOR_MODEL_SHV_E160S) \
-|| defined (CONFIG_KOR_MODEL_SHV_E160K) || defined (CONFIG_KOR_MODEL_SHV_E160L) || defined (CONFIG_JPN_MODEL_SC_05D) 
+#if defined (CONFIG_KOR_MODEL_SHV_E120L)||defined (CONFIG_KOR_MODEL_SHV_E120S)||defined(CONFIG_KOR_MODEL_SHV_E120K)||defined (CONFIG_KOR_MODEL_SHV_E160S) || defined (CONFIG_KOR_MODEL_SHV_E160K) || defined (CONFIG_KOR_MODEL_SHV_E160L)
 	err = gpio_request(SENSOR_GYRO_SCL ,"gyro_scl");
 	if(err) {
 		pr_err("[ACC] %s : gpio_request SCL failed %d\n", __func__, err);
@@ -1544,3 +1566,4 @@ module_exit(k3g_exit);
 MODULE_DESCRIPTION("k3g digital gyroscope driver");
 MODULE_AUTHOR("tim.sk.lee@samsung.com");
 MODULE_LICENSE("GPL");
+

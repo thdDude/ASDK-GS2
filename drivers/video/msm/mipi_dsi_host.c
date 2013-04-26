@@ -1,5 +1,5 @@
 
-/* Copyright (c) 2008-2012, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2008-2012, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -904,8 +904,7 @@ void mipi_dsi_host_init(struct mipi_panel_info *pinfo)
 	/* from frame buffer, low power mode */
 	/* DSI_COMMAND_MODE_DMA_CTRL */
 #if !defined (CONFIG_FB_MSM_MIPI_S6E8AA0_HD720_PANEL) && \
-	!defined (CONFIG_FB_MSM_MIPI_S6E8AA0_WXGA_Q1_PANEL) && \
-	!defined (CONFIG_FB_MSM_MIPI_S6E8AB0_WXGA_PANEL)
+	!defined (CONFIG_FB_MSM_MIPI_S6E8AA0_WXGA_Q1_PANEL)
 
 	MIPI_OUTP(MIPI_DSI_BASE + 0x38, 0x14000000); // lp
 #else
@@ -1443,10 +1442,10 @@ int mipi_dsi_cmds_rx_new(struct dsi_buf *tp, struct dsi_buf *rp,
 
 int mipi_dsi_cmd_dma_tx(struct dsi_buf *tp)
 {
-	unsigned long ret_completion;
-	int ret = 0;
 
 	unsigned long flags;
+	unsigned long ret_completion;
+	int ret = 0;
 
 #ifdef DSI_HOST_DEBUG
 	int i;
@@ -1500,7 +1499,6 @@ int mipi_dsi_cmd_dma_tx(struct dsi_buf *tp)
 
 	dma_unmap_single(&dsi_dev, tp->dmap, tp->len, DMA_TO_DEVICE);
 	tp->dmap = 0;
-
 	return ret;
 }
 
@@ -1652,7 +1650,6 @@ void mipi_dsi_cmdlist_commit(int from_mdp)
 		mipi_dsi_cmdlist_rx(req);
 	else
 		mipi_dsi_cmdlist_tx(req);
-	mipi_dsi_clk_cfg(0);
 
 	if (!video)
 		mipi_dsi_clk_cfg(0);

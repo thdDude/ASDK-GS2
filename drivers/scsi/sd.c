@@ -2535,8 +2535,7 @@ static void sd_scanpartition_async(void *data, async_cookie_t cookie)
 	bdev->bd_invalidated = 1;
 	err = blkdev_get(bdev, FMODE_READ, NULL);
 	if (err < 0) {
-		sd_printk(KERN_NOTICE, sdkp,
-			"maybe no media, delete partition\n");
+		sd_printk(KERN_NOTICE, sdkp, "no media, delete partition\n");
 		disk_part_iter_init(&piter, gd, DISK_PITER_INCL_EMPTY);
 		while ((part = disk_part_iter_next(&piter)))
 			delete_partition(gd, part->partno);
@@ -2764,8 +2763,7 @@ static int sd_probe(struct device *dev)
 		sdkp->th = kthread_create(sd_media_scan_thread,
 						sdkp, "sd-media-scan");
 		if (IS_ERR(sdkp->th)) {
-			dev_warn(dev,
-			"Unable to start the device-scanning thread\n");
+			pr_err("Unable to start the device-scanning thread\n");
 			complete(&sdkp->scanning_done);
 		}
 	}
@@ -2804,7 +2802,7 @@ static int sd_remove(struct device *dev)
 	struct scsi_disk *sdkp;
 
 	sdkp = dev_get_drvdata(dev);
-
+	scsi_autopm_get_device(sdkp->device);
 #ifdef CONFIG_USB_HOST_NOTIFY
 	sdkp->disk->media_present = 0;
 	sd_printk(KERN_INFO, sdkp, "%s\n", __func__);
@@ -2815,9 +2813,6 @@ static int sd_remove(struct device *dev)
 		sd_printk(KERN_NOTICE, sdkp, "scan thread kill success\n");
 	}
 #endif
-
-	scsi_autopm_get_device(sdkp->device);
-
 	async_synchronize_full();
 	blk_queue_prep_rq(sdkp->device->request_queue, scsi_prep_fn);
 	blk_queue_unprep_rq(sdkp->device->request_queue, NULL);

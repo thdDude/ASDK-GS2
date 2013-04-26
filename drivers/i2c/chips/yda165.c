@@ -35,7 +35,7 @@ static ssize_t mode_store(struct device *dev,struct device_attribute *attr,
 	{
 		set_mode = reg;	
 		
-#if defined (CONFIG_TARGET_LOCALE_KOR) || defined (CONFIG_TARGET_LOCALE_JPN)
+#if defined (CONFIG_TARGET_LOCALE_KOR)
 		temp.in1_gain = g_ampgain[set_mode].in1_gain;
 		temp.in2_gain = g_ampgain[set_mode].in2_gain;
 		temp.hp_att = g_ampgain[set_mode].hp_att;
@@ -400,19 +400,11 @@ static int load_ampgain(void)
 	
 #elif defined (CONFIG_USA_MODEL_SGH_I727) || defined (CONFIG_USA_MODEL_SGH_I717) || defined(CONFIG_USA_MODEL_SGH_I757) || defined(CONFIG_USA_MODEL_SGH_I577) || defined(CONFIG_USA_MODEL_SGH_I727R)
 
-
-#if defined(CONFIG_USA_MODEL_SGH_I727R)
-		g_ampgain[2].sp_gainup = 0; /* speaker_headset */
-		g_ampgain[2].sp_att = 22;
-#endif
-
-
 #if defined(CONFIG_USA_MODEL_SGH_I717) || defined(CONFIG_EUR_MODEL_GT_I9210)
 	g_ampgain[3].bSpNg_DetectionLv = 0;
 #else
 	g_ampgain[3].bSpNg_DetectionLv = 4;
 #endif
-
 #if defined(CONFIG_EUR_MODEL_GT_I9210)
 		g_ampgain[0].bSpNg_DetectionLv = 0;
 		g_ampgain[0].bSpNg_AttackTime = 0;
@@ -430,20 +422,20 @@ static int load_ampgain(void)
 
 		g_ampgain[2].bSpNg_DetectionLv = 0; /* SP Noise Gate : detection level */
 		g_ampgain[2].bSpNg_AttackTime = 1;		/* SP Noise Gate : attack time */
-		g_ampgain[2].bSpNcpl_NonClipRatio = 6;	/* SP Non-Clip power limiter : Non-Clip distortion ratio */
+		g_ampgain[2].bSpNcpl_NonClipRatio = 0;	/* SP Non-Clip power limiter : Non-Clip distortion ratio */
 		g_ampgain[2].bSpNcpl_PowerLimit = 0;	/* SP Non-Clip power limiter : Power Limit */
 		g_ampgain[2].bSpNcpl_AttackTime = 1;	/* SP Non-Clip power limiter : attack Time */
 		g_ampgain[2].bSpNcpl_ReleaseTime = 1;	/* SP Non-Clip power limiter : release Time */
 
 		g_ampgain[3].bSpNg_AttackTime = 1;		/* SP Noise Gate : attack time */
-		g_ampgain[3].bSpNcpl_NonClipRatio = 1;	/* SP Non-Clip power limiter : Non-Clip distortion ratio */
+		g_ampgain[3].bSpNcpl_NonClipRatio = 6;	/* SP Non-Clip power limiter : Non-Clip distortion ratio */
 		g_ampgain[3].bSpNcpl_PowerLimit = 0;	/* SP Non-Clip power limiter : Power Limit */
 		g_ampgain[3].bSpNcpl_AttackTime = 1;	/* SP Non-Clip power limiter : attack Time */
 		g_ampgain[3].bSpNcpl_ReleaseTime = 1;	/* SP Non-Clip power limiter : release Time */
 
 		g_ampgain[4].bSpNg_DetectionLv = 0; /* SP Noise Gate : detection level */
 		g_ampgain[4].bSpNg_AttackTime = 1;		/* SP Noise Gate : attack time */
-		g_ampgain[4].bSpNcpl_NonClipRatio = 0;	/* SP Non-Clip power limiter : Non-Clip distortion ratio */
+		g_ampgain[4].bSpNcpl_NonClipRatio = 1;	/* SP Non-Clip power limiter : Non-Clip distortion ratio */
 		g_ampgain[4].bSpNcpl_PowerLimit = 0;	/* SP Non-Clip power limiter : Power Limit */
 		g_ampgain[4].bSpNcpl_AttackTime = 1;	/* SP Non-Clip power limiter : attack Time */
 		g_ampgain[4].bSpNcpl_ReleaseTime = 1;	/* SP Non-Clip power limiter : release Time */
@@ -1259,7 +1251,7 @@ void D4Hp3_PowerOn(D4HP3_SETTING_INFO *pstSettingInfo)
 					| (pstSettingInfo->bLine1Balance << (D4HP3_DIFA & 0xFF))
 					| (pstSettingInfo->bLine2Balance << (D4HP3_DIFB & 0xFF))
 
-#if defined (CONFIG_KOR_MODEL_SHV_E110S) || defined (CONFIG_KOR_MODEL_SHV_E120S) || defined (CONFIG_KOR_MODEL_SHV_E120K) || defined (CONFIG_JPN_MODEL_SC_03D)
+#if defined (CONFIG_KOR_MODEL_SHV_E110S) || defined (CONFIG_KOR_MODEL_SHV_E120S) || defined (CONFIG_KOR_MODEL_SHV_E120K) || defined (CONFIG_JPN_MODEL_SC_03D) || defined (CONFIG_Q1_KOR_AUDIO) || defined(CONFIG_USA_MODEL_SGH_I757)
 					| (0x00 << (D4HP3_HIZ_HP & 0xFF))
 #elif defined (HP_HIZ_ON)
 					| (0x01 << (D4HP3_HIZ_HP & 0xFF))
@@ -1479,6 +1471,133 @@ void yda165_speaker_onoff(int onoff) /* speaker path amp onoff */
 	}
 	
 }
+#if defined(CONFIG_NOISE_REDUCE_FOR_WIFI_ON)
+void yda165_differential_speaker_onoff(int onoff) /* speaker path amp onoff */
+{
+	D4HP3_SETTING_INFO stInfo;
+#if AMPREG_DEBUG	
+	unsigned char buf;
+#endif
+	struct yda165_i2c_data *yd ;
+	yd = &g_data;
+
+	if (onoff) //on
+	{
+		if(yd->power_on)
+			yd->power_on();
+
+		cur_mode = 0;
+		pr_info(MODULE_NAME ":speaker on[cur_mode:%d]\n", cur_mode);
+		
+		/* input */
+		stInfo.bLine1Gain = g_ampgain[cur_mode].in1_gain;		/* LINE1 Gain Amp */
+		stInfo.bLine2Gain = 1;		/* LINE2 Gain Amp */ // g_ampgain[cur_mode].in2_gain -> WIFI연결시 노이즈개선 튜닝값; -1.5dB(1)
+
+		stInfo.bLine1Balance = 0;	/* LINE1 Single-ended(0) or Differential(1) */
+		pr_info(MODULE_NAME ": Differential Speaker mode setting! \n");
+		stInfo.bLine2Balance = 1;	/* LINE2 Single-ended(0) or Differential(1) */ // 0->1 WIFI연결시 노이즈개선 튜닝값; stereo -> differential 
+
+		/* HP */
+		stInfo.bHpCpMode = 0;			/* HP charge pump mode setting, 3stage mode(0) / 2stage mode(1) */
+		
+#if defined (CONFIG_USA_MODEL_SGH_T989) || defined (CONFIG_USA_MODEL_SGH_T769)
+		if(get_hw_rev() < 0x5)
+			stInfo.bHpAvddLev = 0;
+		else
+#elif defined (CONFIG_KOR_MODEL_SHV_E110S) || defined (CONFIG_KOR_MODEL_SHV_E120S) || defined (CONFIG_KOR_MODEL_SHV_E120K) || defined (CONFIG_JPN_MODEL_SC_03D)
+		if(get_hw_rev() < 0x4) // rev0.3
+			stInfo.bHpAvddLev = 0;
+		else
+#elif defined (CONFIG_USA_MODEL_SGH_I727)
+		if(get_hw_rev() < 0x6) // rev0.6
+			stInfo.bHpAvddLev = 0;
+		else
+#endif
+		stInfo.bHpAvddLev = 1;			/* HP charge pump AVDD level, 1.65V<=AVDD<2.40V(0) / 2.40V<=AVDD<=2.86V(1) */
+
+		stInfo.bHpEco = 0;				/* HP eco mode, normal(0) / eco mode(1) */
+		stInfo.bHpAtt = g_ampgain[cur_mode].hp_att;				/* HP attenuator */
+		stInfo.bHpGainUp = g_ampgain[cur_mode].hp_gainup;			/* HP gain up */
+		stInfo.bHpSvol = 0;				/* HP soft volume setting, on(0) / off(1) */
+
+#if defined (CONFIG_USA_MODEL_SGH_T989) || defined (CONFIG_USA_MODEL_SGH_T769)
+        stInfo.bHpZcs = 0;				/* HP zero cross mute setting, on(0) / off(1) */
+#else
+        stInfo.bHpZcs = 1;				/* HP zero cross mute setting, on(0) / off(1) */
+#endif
+
+		stInfo.bHpCh = 0;				/* HP channel, stereo(0)/mono(1) */
+		stInfo.bHpMixer_Line1 = 0;		/* HP mixer LINE1 setting */
+		stInfo.bHpMixer_Line2 = 0;		/* HP mixer LINE2 setting */
+
+
+		/* SP */
+		stInfo.bSpAtt = 25; 				/* SP attenuator */ // g_ampgain[cur_mode].sp_att -> WIFI연결시 노이즈개선 튜닝값; 28 -> 25:(-3dB)
+		stInfo.bSpGainUp = g_ampgain[cur_mode].sp_gainup;			/* SP gain up */
+		stInfo.bSpSvol = 0;				/* SP soft volume setting, on(0) / off(1) */
+		stInfo.bSpZcs = 0;				/* SP zero cross mute setting, on(0) / off(1) */
+
+        /* using L/RIN1->EAR_L/R , L/RIN2->SPK_L/R */
+        stInfo.bSpMixer_Line1 = 0;		/* SP mixer LINE1 setting */
+        stInfo.bSpMixer_Line2 = 1;		/* SP mixer LINE2 setting */
+
+#if defined (CONFIG_USA_MODEL_SGH_T989)  || defined (CONFIG_USA_MODEL_SGH_I727) || defined (CONFIG_USA_MODEL_SGH_I717) || defined(CONFIG_USA_MODEL_SGH_I757) || defined(CONFIG_USA_MODEL_SGH_I577) || defined (CONFIG_USA_MODEL_SGH_T769)
+		stInfo.bSpNg_DetectionLv = g_ampgain[cur_mode].bSpNg_DetectionLv;	/* SP Noise Gate : detection level */
+		stInfo.bSpNg_AttackTime = g_ampgain[cur_mode].bSpNg_AttackTime;	/* SP Noise Gate : attack time */
+		stInfo.bSpNcpl_NonClipRatio = g_ampgain[cur_mode].bSpNcpl_NonClipRatio;  /* SP Non-Clip power limiter : Non-Clip distortion ratio */
+		stInfo.bSpNcpl_PowerLimit = g_ampgain[cur_mode].bSpNcpl_PowerLimit;	/* SP Non-Clip power limiter : Power Limit */
+		stInfo.bSpNcpl_AttackTime = g_ampgain[cur_mode].bSpNcpl_AttackTime;	/* SP Non-Clip power limiter : attack Time */
+		stInfo.bSpNcpl_ReleaseTime = g_ampgain[cur_mode].bSpNcpl_ReleaseTime;	/* SP Non-Clip power limiter : release Time */
+#else
+		stInfo.bSpNg_DetectionLv = 0;
+		stInfo.bSpNg_AttackTime = 1;
+#if defined (CONFIG_KOR_MODEL_SHV_E110S) || defined (CONFIG_KOR_MODEL_SHV_E120S) || defined (CONFIG_KOR_MODEL_SHV_E120K) || defined (CONFIG_KOR_MODEL_SHV_E120L)
+		stInfo.bSpNcpl_NonClipRatio = 0;
+#elif defined (CONFIG_Q1_KOR_AUDIO)
+		stInfo.bSpNcpl_NonClipRatio = 0;
+#else
+		stInfo.bSpNcpl_NonClipRatio = 1;
+#endif
+		stInfo.bSpNcpl_PowerLimit = 0;
+		stInfo.bSpNcpl_AttackTime = 1;
+		stInfo.bSpNcpl_ReleaseTime = 1;
+#endif		
+		//pr_info(MODULE_NAME ":Differential speaker on[bLine2Gain %d] ,bSpAtt[%d]\n", stInfo.bLine2Gain,stInfo.bSpAtt);
+
+		D4Hp3_PowerOn(&stInfo);
+
+#if AMPREG_DEBUG
+		D4Hp3_ReadRegisterByte( 0x80, &buf);
+		pr_info(MODULE_NAME ":%d = %02x\n",__LINE__,buf);
+		D4Hp3_ReadRegisterByte( 0x81, &buf);
+		pr_info(MODULE_NAME ":%d = %02x\n",__LINE__,buf);
+		D4Hp3_ReadRegisterByte( 0x82, &buf);
+		pr_info(MODULE_NAME ":%d = %02x\n",__LINE__,buf);
+		D4Hp3_ReadRegisterByte( 0x83, &buf);
+		pr_info(MODULE_NAME ":%d = %02x\n",__LINE__,buf);
+		D4Hp3_ReadRegisterByte( 0x84, &buf);
+		pr_info(MODULE_NAME ":%d = %02x\n",__LINE__,buf);
+		D4Hp3_ReadRegisterByte( 0x85, &buf);
+		pr_info(MODULE_NAME ":%d = %02x\n",__LINE__,buf);
+		D4Hp3_ReadRegisterByte( 0x86, &buf);
+		pr_info(MODULE_NAME ":%d = %02x\n",__LINE__,buf);
+		D4Hp3_ReadRegisterByte( 0x87, &buf);
+		pr_info(MODULE_NAME ":%d = %02x\n",__LINE__,buf);
+#endif
+
+	}
+	else  //off
+	{
+		pr_info(MODULE_NAME ":speaker off\n");
+		
+		D4Hp3_PowerOff();
+		
+		if(yd->power_off)
+			yd->power_off();
+	}
+	
+}
+#endif
 void yda165_headset_onoff(int onoff) /* headset path amp onoff */
 {
 	D4HP3_SETTING_INFO stInfo;
@@ -2139,7 +2258,6 @@ void yda165_speaker_headset_onoff(int onoff) /* speaker+headset path amp onoff *
 			yd->power_off();
 	}
 }
-
 #ifdef CONFIG_EUR_MODEL_GT_I9210
 void yda165_lineout_onoff(int onoff) /* lineout path amp onoff */
 {
@@ -2212,7 +2330,6 @@ void yda165_lineout_onoff(int onoff) /* lineout path amp onoff */
 	}
 }
 #endif
-
 void yda165_tty_onoff(int onoff) /* tty path amp onoff */
 {
 	D4HP3_SETTING_INFO stInfo;

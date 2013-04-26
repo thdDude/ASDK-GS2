@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2009-2011, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -277,5 +277,10 @@ static inline int cpu_is_msm9615(void)
 #else
 	return 0;
 #endif
+}
+
+static inline int cpu_is_msm8625(void)
+{
+	return 0;
 }
 #endif

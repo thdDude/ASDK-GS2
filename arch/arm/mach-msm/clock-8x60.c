@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2012, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2009-2012, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -21,8 +21,6 @@
 #include <linux/delay.h>
 #include <linux/clk.h>
 #include <linux/clkdev.h>
-#include <linux/asdk.h>
-
 
 #include <mach/msm_iomap.h>
 #include <mach/clk.h>
@@ -77,7 +75,6 @@
 #define PLLTEST_PAD_CFG_REG			REG(0x2FA4)
 #define PMEM_ACLK_CTL_REG			REG(0x25A0)
 #define PPSS_HCLK_CTL_REG			REG(0x2580)
-#define PRNG_CLK_NS_REG				REG(0x2E80)
 #define RINGOSC_NS_REG				REG(0x2DC0)
 #define RINGOSC_STATUS_REG			REG(0x2DCC)
 #define RINGOSC_TCXO_CTL_REG			REG(0x2DC4)
@@ -1269,12 +1266,7 @@ static struct branch_clk pmem_clk = {
 		.freq_hz = f, \
 		.src_clk = &s##_clk.c, \
 	}
-static struct clk_freq_tbl clk_tbl_prng_32[] = {
-	F_PRNG(32000000, pll8),
-	F_END
-};
-
-static struct clk_freq_tbl clk_tbl_prng_64[] = {
+static struct clk_freq_tbl clk_tbl_prng[] = {
 	F_PRNG(64000000, pll8),
 	F_END
 };
@@ -1288,12 +1280,12 @@ static struct rcg_clk prng_clk = {
 		.halt_bit = 10,
 	},
 	.set_rate = set_rate_nop,
-	.freq_tbl = clk_tbl_prng_32,
+	.freq_tbl = clk_tbl_prng,
 	.current_freq = &rcg_dummy_freq,
 	.c = {
 		.dbg_name = "prng_clk",
 		.ops = &clk_ops_rcg_8x60,
-		VDD_DIG_FMAX_MAP2(LOW, 32000000, NOMINAL, 64000000),
+		VDD_DIG_FMAX_MAP2(LOW, 32000000, NOMINAL, 65000000),
 		CLK_INIT(prng_clk.c),
 	},
 };
@@ -2305,7 +2297,7 @@ static struct rcg_clk gfx2d0_clk = {
 		.dbg_name = "gfx2d0_clk",
 		.ops = &clk_ops_rcg_8x60,
 		VDD_DIG_FMAX_MAP3(LOW,  100000000, NOMINAL, 200000000,
-				  HIGH, GPU_2D),
+				  HIGH, 228571000),
 		CLK_INIT(gfx2d0_clk.c),
 	},
 };
@@ -2347,7 +2339,7 @@ static struct rcg_clk gfx2d1_clk = {
 		.dbg_name = "gfx2d1_clk",
 		.ops = &clk_ops_rcg_8x60,
 		VDD_DIG_FMAX_MAP3(LOW,  100000000, NOMINAL, 200000000,
-				  HIGH, GPU_2D),
+				  HIGH, 228571000),
 		CLK_INIT(gfx2d1_clk.c),
 	},
 };
@@ -2376,7 +2368,6 @@ static struct clk_freq_tbl clk_tbl_gfx3d[] = {
 	F_GFX3D(200000000, pll2, 1,  4),
 	F_GFX3D(228571000, pll2, 2,  7),
 	F_GFX3D(266667000, pll2, 1,  3),
-	F_GFX3D(300000000, pll2, 3,  8),
 	F_GFX3D(320000000, pll2, 2,  5),
 	F_END
 };
@@ -2418,7 +2409,7 @@ static struct rcg_clk gfx3d_clk = {
 		.dbg_name = "gfx3d_clk",
 		.ops = &clk_ops_rcg_8x60,
 		VDD_DIG_FMAX_MAP3(LOW,   96000000, NOMINAL, 200000000,
-				  HIGH, GPU_3D),
+				  HIGH, 320000000),
 		CLK_INIT(gfx3d_clk.c),
 		.depends = &gmem_axi_clk.c,
 	},
@@ -2629,7 +2620,7 @@ static struct rcg_clk mdp_vsync_clk = {
 static struct clk_freq_tbl clk_tbl_pixel_mdp[] = {
 	F_PIXEL_MDP(        0, gnd,  1,   0,    0),
 #if defined (CONFIG_USA_MODEL_SGH_I577) || defined (CONFIG_USA_MODEL_SGH_T769)
-	F_PIXEL_MDP( 24000000, pll8, 1,	  1,   16), // for TDMB	
+	F_PIXEL_MDP( 24000000, pll8, 1,	  1,   16),
 #endif
 	F_PIXEL_MDP( 25600000, pll8, 3,   1,    5),
 #if defined (CONFIG_KOR_MODEL_SHV_E110S) || defined (CONFIG_USA_MODEL_SGH_I727) || defined (CONFIG_USA_MODEL_SGH_T989)	
@@ -2998,6 +2989,7 @@ static struct clk_freq_tbl clk_tbl_vfe[] = {
 	F_VFE(153600000, pll8,  1, 2,  5),
 	F_VFE(200000000, pll2,  2, 1,  2),
 	F_VFE(228570000, pll2,  1, 2,  7),
+	F_VFE(266667000, pll2,  1, 1,  3),
 	F_END
 };
 
@@ -3022,7 +3014,7 @@ static struct rcg_clk vfe_clk = {
 		.dbg_name = "vfe_clk",
 		.ops = &clk_ops_rcg_8x60,
 		VDD_DIG_FMAX_MAP3(LOW,  110000000, NOMINAL, 228570000,
-				  HIGH, GPU_2D),
+				  HIGH, 266667000),
 		CLK_INIT(vfe_clk.c),
 		.depends = &vfe_axi_clk.c,
 	},
@@ -3613,7 +3605,11 @@ static struct clk_lookup msm_clocks_8x60[] = {
 	CLK_LOOKUP("mmfpb_a_clk",	mmfpb_a_clk.c,	NULL),
 
 	CLK_LOOKUP("core_clk",		gp0_clk.c,		NULL),
+#ifdef CONFIG_VIBETONZ_CLK
+	CLK_LOOKUP("core_clk",		gp1_clk.c,		"vibrator"),
+#else
 	CLK_LOOKUP("core_clk",		gp1_clk.c,		NULL),
+#endif
 	CLK_LOOKUP("core_clk",		gp2_clk.c,		NULL),
 	CLK_LOOKUP("core_clk",		gsbi1_uart_clk.c,	NULL),
 	CLK_LOOKUP("core_clk",		gsbi2_uart_clk.c,	NULL),
@@ -3648,7 +3644,7 @@ static struct clk_lookup msm_clocks_8x60[] = {
 #if defined (CONFIG_EPEN_WACOM_G5SP)
     CLK_LOOKUP("core_clk",    gsbi11_qup_clk.c, "qup_i2c.18"),
 #else
-    CLK_LOOKUP("core_clk",    gsbi11_qup_clk.c,     NULL),
+	CLK_LOOKUP("core_clk",		gsbi11_qup_clk.c,	NULL),
 #endif	
 	CLK_LOOKUP("gsbi_qup_clk",	gsbi12_qup_clk.c,	"msm_dsps"),
 	CLK_LOOKUP("core_clk",		gsbi12_qup_clk.c,	"qup_i2c.5"),
@@ -3678,7 +3674,6 @@ static struct clk_lookup msm_clocks_8x60[] = {
 #else
 	CLK_LOOKUP("iface_clk",		gsbi1_p_clk.c,		"spi_qsd.0"),
 #endif
-	
 	CLK_LOOKUP("iface_clk",		gsbi2_p_clk.c,		NULL),
 	CLK_LOOKUP("iface_clk",		gsbi3_p_clk.c, "msm_serial_hsl.2"),
 	CLK_LOOKUP("iface_clk",		gsbi3_p_clk.c,		"qup_i2c.0"),
@@ -3693,11 +3688,11 @@ static struct clk_lookup msm_clocks_8x60[] = {
 	CLK_LOOKUP("iface_clk", 	gsbi10_p_clk.c, 	"qup_i2c.14"),
 #else
 	CLK_LOOKUP("iface_clk",		gsbi10_p_clk.c,		"spi_qsd.1"),
-#endif	
+#endif
 #if defined (CONFIG_EPEN_WACOM_G5SP)
     CLK_LOOKUP("iface_clk",     gsbi11_p_clk.c,    "qup_i2c.18"),
 #else
-    CLK_LOOKUP("iface_clk",     gsbi11_p_clk.c,     NULL),
+	CLK_LOOKUP("iface_clk",		gsbi11_p_clk.c,		NULL),
 #endif	
 	CLK_LOOKUP("iface_clk",		gsbi12_p_clk.c,		NULL),
 	CLK_LOOKUP("iface_clk",		gsbi12_p_clk.c, "msm_serial_hsl.0"),
@@ -3728,6 +3723,8 @@ static struct clk_lookup msm_clocks_8x60[] = {
 	CLK_LOOKUP("core_clk",		amp_clk.c,		NULL),
 	CLK_LOOKUP("cam_clk",		cam_clk.c,		NULL),
 	CLK_LOOKUP("cam_clk",		cam_clk.c,		"1-001a"),
+	CLK_LOOKUP("cam_clk",		cam_clk.c,		"1-006c"),
+	CLK_LOOKUP("cam_clk",		cam_clk.c,		"1-0078"),
 	CLK_LOOKUP("csi_clk",		csi0_clk.c,		NULL),
 	CLK_LOOKUP("csi_clk",		csi0_clk.c,		"msm_csic.0"),
 	CLK_LOOKUP("csi_clk",		csi1_clk.c, "msm_camera_s5k5bafx.0"),
@@ -3774,11 +3771,11 @@ static struct clk_lookup msm_clocks_8x60[] = {
 	CLK_LOOKUP("vpe_clk",		vpe_clk.c,		"msm_vpe.0"),
 	CLK_LOOKUP("core_clk",		vpe_clk.c,	"footswitch-8x60.9"),
 	CLK_LOOKUP("csi_vfe_clk",	csi0_vfe_clk.c,		NULL),
-	CLK_LOOKUP("csi_vfe_clk",	csi0_vfe_clk.c, "msm_csic.0"),
-	CLK_LOOKUP("csi_vfe_clk",	csi1_vfe_clk.c, "msm_csic.1"),
 	CLK_LOOKUP("csi_vfe_clk",	csi1_vfe_clk.c, "msm_camera_s5k5bafx.0"),
 	CLK_LOOKUP("csi_vfe_clk",	csi1_vfe_clk.c, "msm_camera_sr200pc20m.0"),
 	CLK_LOOKUP("csi_vfe_clk",	csi1_vfe_clk.c, "msm_camera_s5k6aafx.0"),
+	CLK_LOOKUP("csi_vfe_clk",	csi0_vfe_clk.c, "msm_csic.0"),
+	CLK_LOOKUP("csi_vfe_clk",	csi1_vfe_clk.c, "msm_csic.1"),
 	CLK_LOOKUP("vfe_clk",		vfe_clk.c,		NULL),
 	CLK_LOOKUP("vfe_clk",		vfe_clk.c,		"msm_vfe.0"),
 	CLK_LOOKUP("core_clk",		vfe_clk.c,	"footswitch-8x60.8"),
@@ -3792,12 +3789,12 @@ static struct clk_lookup msm_clocks_8x60[] = {
 	CLK_LOOKUP("arb_clk",		amp_p_clk.c,		"mipi_dsi.1"),
 	CLK_LOOKUP("csi_pclk",		csi0_p_clk.c,		NULL),
 	CLK_LOOKUP("csi_pclk",		csi0_p_clk.c,		"msm_csic.0"),
-	CLK_LOOKUP("csi_pclk",		csi1_p_clk.c,		"msm_csic.1"),
 	CLK_LOOKUP("csi_pclk",		csi1_p_clk.c, "msm_camera_s5k5bafx.0"),
 	CLK_LOOKUP("csi_pclk",		csi1_p_clk.c, "msm_camera_sr200pc20m.0"),
 	CLK_LOOKUP("csi_pclk",		csi1_p_clk.c, "msm_camera_s5k6aafx.0"),
 	CLK_LOOKUP("master_iface_clk",	dsi_m_p_clk.c,		"mipi_dsi.1"),
 	CLK_LOOKUP("slave_iface_clk",	dsi_s_p_clk.c,		"mipi_dsi.1"),
+	CLK_LOOKUP("csi_pclk",		csi1_p_clk.c,		"msm_csic.1"),
 	CLK_LOOKUP("dsi_m_pclk",	dsi_m_p_clk.c,		NULL),
 	CLK_LOOKUP("dsi_s_pclk",	dsi_s_p_clk.c,		NULL),
 	CLK_LOOKUP("iface_clk",		gfx2d0_p_clk.c,	"kgsl-2d0.0"),
@@ -3934,15 +3931,8 @@ static void __init reg_init(void)
 	rmwreg(0x80FF0000, GFX3D_CC_REG,  0xE0FF0010);
 	rmwreg(0x80FF0000, IJPEG_CC_REG,  0xE0FF0018);
 	rmwreg(0x80FF0000, JPEGD_CC_REG,  0xE0FF0018);
-#ifdef CONFIG_SAMSUNG_8X60_TABLET
-	/* MDP and PIXEL clocks may be running at boot, don't turn them off. */
-	rmwreg(0x80FF0000, MDP_CC_REG,   BM(31, 29) | BM(23, 16));
-	/* invert pclk polarity */
-	rmwreg(0x80FF0200, PIXEL_CC_REG, BM(31, 29) | BM(23, 16) | BIT(9)); 
-#else
 	rmwreg(0x80FF0000, MDP_CC_REG,    0xE1FF0010);
 	rmwreg(0x80FF0000, PIXEL_CC_REG,  0xE1FF0010);
-#endif
 	rmwreg(0x000004FF, PIXEL_CC2_REG, 0x000007FF);
 	rmwreg(0x80FF0000, ROT_CC_REG,    0xE0FF0010);
 	rmwreg(0x80FF0000, TV_CC_REG,     0xE1FFC010);
@@ -3975,9 +3965,6 @@ static void __init reg_init(void)
 	/* Set the dsi_byte_clk src to the DSI PHY PLL,
 	 * dsi_esc_clk to PXO/2, and the hdmi_app_clk src to PXO */
 	rmwreg(0x400001, MISC_CC2_REG, 0x424003);
-
-	if ((readl_relaxed(PRNG_CLK_NS_REG) & 0x7F) == 0x2B)
-		prng_clk.freq_tbl = clk_tbl_prng_64;
 }
 
 /* Local clock driver initialization. */
@@ -4005,7 +3992,7 @@ static void __init msm8660_clock_init(void)
 
 	/* Initialize rates for clocks that only support one. */
 	clk_set_rate(&pdm_clk.c, 27000000);
-	clk_set_rate(&prng_clk.c, prng_clk.freq_tbl->freq_hz);
+	clk_set_rate(&prng_clk.c, 64000000);
 	clk_set_rate(&mdp_vsync_clk.c, 27000000);
 	clk_set_rate(&tsif_ref_clk.c, 105000);
 	clk_set_rate(&tssc_clk.c, 27000000);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2011, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -82,7 +82,6 @@ static struct usb_interface_descriptor rmnet_interface_desc = {
 	.bDescriptorType =	USB_DT_INTERFACE,
 	.bNumEndpoints =	3,
 	.bInterfaceClass =	USB_CLASS_VENDOR_SPEC,
-#define CONFIG_USB_ANDROID_SAMSUNG_COMPOSITE
 #ifdef CONFIG_USB_ANDROID_SAMSUNG_COMPOSITE
 	.bInterfaceSubClass = 0xE0,
 	.bInterfaceProtocol = 0x00,

@@ -1,4 +1,4 @@
-/* Copyright (c) 2008-2012, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2008-2012, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -31,6 +31,16 @@
 #include <linux/regulator/consumer.h>
 
 #include "msm_fb.h"
+#include "mdp4.h"
+
+struct mdp4_overlay_perf {
+	u32 mdp_clk_rate;
+	u32 use_ov0_blt;
+	u32 use_ov1_blt;
+	u32 mdp_bw;
+};
+
+extern struct mdp4_overlay_perf perf_current;
 
 static int lcdc_probe(struct platform_device *pdev);
 static int lcdc_remove(struct platform_device *pdev);

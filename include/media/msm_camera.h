@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2012, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2009-2012, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -211,9 +211,6 @@
 	_IOR(MSM_CAM_IOCTL_MAGIC, 52, struct msm_cam_evt_divert_frame *)
 
 #define MSM_CAM_IOCTL_EXT_CONFIG  _IOWR(MSM_CAM_IOCTL_MAGIC, 50, sensor_ext_cfg_data)
-
-#define MCTL_CAM_IOCTL_SET_FOCUS \
-	_IOW(MSM_CAM_IOCTL_MAGIC, 53, uint32_t)
 
 struct msm_mctl_pp_cmd {
 	int32_t  id;
@@ -804,12 +801,12 @@ struct msm_snapshot_pp_status {
 #define CFG_GET_CALIB_DATA		31
 #define CFG_SET_ISO			32
 //Qualcomm Orginal Code CFG_GET_OUTPUT_INFO 32
-//#define CFG_GET_OUTPUT_INFO		32
 #define CFG_GET_EEPROM_DATA		33
 #define CFG_SET_ACTUATOR_INFO		34
 #define CFG_GET_ACTUATOR_INFO		35
 #define CFG_SET_SATURATION	36
-#define CFG_MAX			37
+#define CFG_GET_OUTPUT_INFO		37
+#define CFG_MAX			38
 
 
 #define MOVE_NEAR	0
@@ -1425,15 +1422,6 @@ enum ext_cfg_command
     EXT_CFG_MAX,
     EXT_CFG_SET_LOW_LEVEL = 51,
     EXT_CFG_SET_APPS = 52,
-    EXT_CFG_SET_AF_STATUS = 60,	//P5LTE
-    EXT_CFG_SET_FLASH_MODE,
-    EXT_CFG_ESD_RESET,
-    EXT_CFG_SET_AWB,
-    EXT_CFG_SET_VENDOR,
-    EXT_CFG_GET_STATUS,
-    EXT_CFG_GET_EXIF_EXPOSURE,
-    EXT_CFG_GET_EXIF_ISO,
-    EXT_CFG_GET_EXIF_FlASH,
 };
 
 

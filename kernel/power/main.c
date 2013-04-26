@@ -16,7 +16,6 @@
 #include "power.h"
 #ifdef CONFIG_SEC_DVFS
 #include <linux/cpufreq.h>
-#include <linux/rq_stats.h>
 #endif
 
 DEFINE_MUTEX(pm_mutex);
@@ -318,17 +317,13 @@ power_attr(wake_unlock);
 #endif
 
 #ifdef CONFIG_SEC_DVFS
-static unsigned int freq_min_apps;
-static unsigned int freq_max_apps;
-static unsigned int freq_min_apps_lock;
-static unsigned int freq_max_apps_lock;
-
 DEFINE_MUTEX(dvfs_mutex);
 static unsigned long dvfs_id = 0;
 static unsigned long apps_min_freq = MIN_FREQ_LIMIT;
 static unsigned long apps_max_freq = MAX_FREQ_LIMIT;
 static unsigned long thermald_max_freq = MAX_FREQ_LIMIT;
 
+static unsigned long mhl_min_freq = MIN_FREQ_LIMIT;
 static unsigned long touch_min_freq = MAX_TOUCH_LIMIT;
 static unsigned long unicpu_max_freq = MAX_UNICPU_LIMIT;
 
@@ -341,11 +336,10 @@ static int verify_cpufreq_target(unsigned int target)
 	if (table == NULL)
 		return -EFAULT;
 
-	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) 
-	{
+	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
 		if (table[i].frequency < MIN_FREQ_LIMIT || table[i].frequency > MAX_FREQ_LIMIT)
 			continue;
-
+		
 		if (target == table[i].frequency)
 			return 0;
 	}
@@ -355,14 +349,13 @@ static int verify_cpufreq_target(unsigned int target)
 
 int set_freq_limit(unsigned long id, unsigned int freq)
 {
-	int ret = 0;
 	unsigned int min = MIN_FREQ_LIMIT;
 	unsigned int max = MAX_FREQ_LIMIT;
 	unsigned int cur = 0;	
 
 	if (id < 0)
 		return -EINVAL;
-
+	
 	if (freq != 0 && freq != -1 && verify_cpufreq_target(freq))
 		return -EINVAL;
 
@@ -376,6 +369,8 @@ int set_freq_limit(unsigned long id, unsigned int freq)
 	/* update freq for apps/thermald */
 	if (id == DVFS_APPS_MIN_ID)
 		apps_min_freq = freq;
+	else if (id == DVFS_MHL_ID)
+		mhl_min_freq = freq;
 	else if (id == DVFS_APPS_MAX_ID)
 		apps_max_freq = freq;
 	else if (id == DVFS_THERMALD_ID)
@@ -384,6 +379,8 @@ int set_freq_limit(unsigned long id, unsigned int freq)
 	/* set min - apps */
 	if (dvfs_id & DVFS_APPS_MIN_ID && min < apps_min_freq)
 		min = apps_min_freq;
+	if (dvfs_id & DVFS_MHL_ID && min < mhl_min_freq)
+		min = mhl_min_freq;
 	if (dvfs_id & DVFS_TOUCH_ID && min < touch_min_freq)
 		min = touch_min_freq;
 
@@ -402,22 +399,21 @@ int set_freq_limit(unsigned long id, unsigned int freq)
 	/* update */
 	set_min_lock(min);
 	set_max_lock(max);
-
-	printk("%s: 0x%x %d, min %d, max %d\n", __FUNCTION__, id, freq, min, max);
+        #ifndef CONFIG_USA_MODEL_SGH_T989
+	printk("%s: 0x%lx %d, min %d, max %d\n", __FUNCTION__, id, freq, min, max);
+	#endif
 
 	/* need to update now */
 	if (id & UPDATE_NOW_BITS)
 	{
 		int cpu;
 
-		for_each_online_cpu(cpu) 
-		{
+		for_each_online_cpu(cpu) {
 			cur = cpufreq_quick_get(cpu);
-			if (cur)
-			{
+			if (cur) {
 				struct cpufreq_policy policy;
 				policy.cpu = cpu;
-
+				
 				if (cur < min)
 					cpufreq_driver_target(&policy, min, CPUFREQ_RELATION_H);
 				else if (cur > max)
@@ -425,7 +421,7 @@ int set_freq_limit(unsigned long id, unsigned int freq)
 			}
 		}
 	}
-
+	
 	mutex_unlock(&dvfs_mutex);	
 
 	return 0;
@@ -448,7 +444,7 @@ static ssize_t cpufreq_min_limit_store(struct kobject *kobj,
 					const char *buf, size_t n)
 {
 	int freq_min_limit;
-
+	
 	sscanf(buf, "%d", &freq_min_limit);
 
 	set_freq_limit(DVFS_APPS_MIN_ID, freq_min_limit);
@@ -469,7 +465,7 @@ static ssize_t cpufreq_max_limit_show(struct kobject *kobj,
 	freq = get_max_lock();
 	if (!freq)
 		freq = -1;
-
+	
 	return sprintf(buf, "%d\n", freq);
 }
 
@@ -482,7 +478,7 @@ static ssize_t cpufreq_max_limit_store(struct kobject *kobj,
 	sscanf(buf, "%d", &freq_max_limit);
 
 	set_freq_limit(DVFS_APPS_MAX_ID, freq_max_limit);
-
+	
 	return n;
 }
 static ssize_t cpufreq_table_show(struct kobject *kobj,
@@ -501,8 +497,7 @@ static ssize_t cpufreq_table_show(struct kobject *kobj,
 	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) ;
 	count = i;
 
-	for (i = count-1; i >= 0; i--) 
-	{
+	for (i = count-1; i >= 0; i--) {
 		freq = table[i].frequency;
 
 		if (freq < MIN_FREQ_LIMIT || freq > MAX_FREQ_LIMIT)
@@ -583,12 +578,6 @@ static int __init pm_init(void)
 	power_kobj = kobject_create_and_add("power", NULL);
 	if (!power_kobj)
 		return -ENOMEM;
-#ifdef CONFIG_SEC_DVFS
-	freq_min_apps = MIN_FREQ_LIMIT;
-	freq_max_apps = MAX_FREQ_LIMIT;
-	freq_min_apps_lock = 0;
-	freq_max_apps_lock = 0;
-#endif
 	return sysfs_create_group(power_kobj, &attr_group);
 }
 

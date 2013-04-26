@@ -1100,7 +1100,7 @@ enum nl80211_commands {
  *	%NL80211_CMD_SET_BEACON to provide extra IEs (e.g., WPS/P2P IE) into
  *	(Re)Association Response frames when the driver (or firmware) replies to
  *	(Re)Association Request frames.
- *
+*
  * @NL80211_ATTR_STA_WME: Nested attribute containing the wme configuration
  *	of the station, see &enum nl80211_sta_wme_attr.
  * @NL80211_ATTR_SUPPORT_AP_UAPSD: the device supports uapsd when working
@@ -1378,7 +1378,6 @@ enum nl80211_attrs {
 	NL80211_ATTR_TDLS_OPERATION,
 	NL80211_ATTR_TDLS_SUPPORT,
 	NL80211_ATTR_TDLS_EXTERNAL_SETUP,
-
 	NL80211_ATTR_DEVICE_AP_SME,
 
 	NL80211_ATTR_DONT_WAIT_FOR_ACK,

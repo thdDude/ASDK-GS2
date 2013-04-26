@@ -31,7 +31,7 @@ enum {
 	DEBUG_EXPIRE = 1U << 3,
 	DEBUG_WAKE_LOCK = 1U << 4,
 };
-static int debug_mask = DEBUG_EXIT_SUSPEND | DEBUG_WAKEUP  | DEBUG_SUSPEND;
+static int debug_mask = DEBUG_EXIT_SUSPEND | DEBUG_WAKEUP | DEBUG_SUSPEND;
 module_param_named(debug_mask, debug_mask, int, S_IRUGO | S_IWUSR | S_IWGRP);
 
 #define WAKE_LOCK_TYPE_MASK              (0x0f)
@@ -268,7 +268,9 @@ long has_wake_lock(int type)
 static void suspend_sys_sync(struct work_struct *work)
 {
 	if (debug_mask & DEBUG_SUSPEND)
+	        #ifndef CONFIG_USA_MODEL_SGH_T989
 		pr_info("PM: Syncing filesystems...\n");
+		#endif
 
 	sys_sync();
 

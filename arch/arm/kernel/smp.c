@@ -307,8 +307,6 @@ asmlinkage void __cpuinit secondary_start_kernel(void)
 	enter_lazy_tlb(mm, current);
 	local_flush_tlb_all();
 
-	pr_debug("CPU%u: Booted secondary processor\n", cpu);
-
 	/*
 	 * All kernel threads share the same mm context; grab a
 	 * reference and switch to it.
@@ -329,7 +327,17 @@ asmlinkage void __cpuinit secondary_start_kernel(void)
 	 */
 	platform_secondary_init(cpu);
 
+	/*
+	 * Enable local interrupts.
+	 */
 	notify_cpu_starting(cpu);
+	local_irq_enable();
+	local_fiq_enable();
+
+	/*
+	 * Setup the percpu timer for this CPU.
+	 */
+	percpu_timer_setup();
 
 	calibrate_delay();
 
@@ -341,14 +349,8 @@ asmlinkage void __cpuinit secondary_start_kernel(void)
 	 * before we continue.
 	 */
 	set_cpu_online(cpu, true);
-
-	/*
-	 * Setup the percpu timer for this CPU.
-	 */
-	percpu_timer_setup();
-
-	local_irq_enable();
-	local_fiq_enable();
+	while (!cpu_active(cpu))
+		cpu_relax();
 
 	/*
 	 * OK, it's off to the idle thread for us

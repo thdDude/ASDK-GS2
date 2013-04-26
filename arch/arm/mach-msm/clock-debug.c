@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007 Google, Inc.
- * Copyright (c) 2007-2011, Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2007-2011, The Linux Foundation. All rights reserved.
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -139,7 +139,7 @@ DEFINE_SIMPLE_ATTRIBUTE(clock_hwcg_fops, clock_debug_hwcg_get,
 			NULL, "%llu\n");
 
 static struct dentry *debugfs_base;
-static u32 debug_suspend;
+static u32 debug_suspend = 1;
 static struct clk_lookup *msm_clocks;
 static size_t num_msm_clocks;
 

@@ -1,4 +1,4 @@
-/* Copyright (c) 2008-2012, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2008-2012, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -46,10 +46,6 @@ extern struct mdp_csc_cfg mdp_csc_convert[4];
 extern struct mdp_csc_cfg_data csc_cfg_matrix[];
 extern struct workqueue_struct *mdp_hist_wq;
 
-extern int mdp_lut_i;
-extern int mdp_lut_push;
-extern int mdp_lut_push_i;
-extern struct mutex mdp_lut_push_sem;
 extern uint32 mdp_intr_mask;
 
 #define MDP4_REVISION_V1		0
@@ -96,10 +92,16 @@ extern unsigned char hdmi_prim_display;
 
 struct vsync {
 	ktime_t vsync_time;
+	struct completion vsync_comp;
 	struct device *dev;
 	struct work_struct vsync_work;
 	int vsync_irq_enabled;
+	int vsync_dma_enabled;
+	int disabled_clocks;
 	struct completion vsync_wait;
+	atomic_t suspend;
+	atomic_t vsync_resume;
+	int sysfs_created;
 };
 
 extern struct vsync vsync_cntrl;
@@ -729,7 +731,7 @@ extern struct mdp_hist_mgmt *mdp_hist_mgmt_array[];
 #define MDP_DMA_P_LUT_C2_EN   BIT(2)
 #define MDP_DMA_P_LUT_POST    BIT(4)
 
-void mdp_hw_init(int splash);
+void mdp_hw_init(void);
 int mdp_ppp_pipe_wait(void);
 void mdp_pipe_kickoff(uint32 term, struct msm_fb_data_type *mfd);
 void mdp_clk_ctrl(int on);
@@ -779,7 +781,7 @@ void mdp_lcdc_update(struct msm_fb_data_type *mfd);
 int mdp_dsi_video_on(struct platform_device *pdev);
 int mdp_dsi_video_off(struct platform_device *pdev);
 void mdp_dsi_video_update(struct msm_fb_data_type *mfd);
-void mdp3_dsi_cmd_dma_busy_wait(struct msm_fb_data_type *mfd)
+void mdp3_dsi_cmd_dma_busy_wait(struct msm_fb_data_type *mfd);
 static inline int mdp4_dsi_cmd_off(struct platform_device *pdev)
 {
 	return 0;
@@ -814,6 +816,14 @@ static inline int mdp4_mddi_on(struct platform_device *pdev)
 }
 #endif
 
+
+#ifndef CONFIG_FB_MSM_MDDI
+static inline void mdp4_mddi_rdptr_init(int cndx)
+{
+	/* empty */
+}
+
+#endif
 
 void set_cont_splashScreen_status(int);
 
@@ -850,6 +860,12 @@ static inline int mdp_bus_scale_update_request(u64 ab,
 void mdp_dma_vsync_ctrl(int enable);
 void mdp_dma_video_vsync_ctrl(int enable);
 void mdp_dma_lcdc_vsync_ctrl(int enable);
+ssize_t mdp_dma_show_event(struct device *dev,
+		struct device_attribute *attr, char *buf);
+ssize_t mdp_dma_video_show_event(struct device *dev,
+		struct device_attribute *attr, char *buf);
+ssize_t mdp_dma_lcdc_show_event(struct device *dev,
+		struct device_attribute *attr, char *buf);
 
 #ifdef MDP_HW_VSYNC
 void vsync_clk_prepare_enable(void);
@@ -893,6 +909,10 @@ static inline void mdp4_overlay_dsi_state_set(int state)
 static inline int mdp4_overlay_dsi_state_get(void)
 {
 	return 0;
+}
+static inline void mdp4_iommu_detach(void)
+{
+	/*empty */
 }
 #endif
 

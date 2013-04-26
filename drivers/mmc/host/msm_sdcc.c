@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 2007 Google Inc,
  *  Copyright (C) 2003 Deep Blue Solutions, Ltd, All Rights Reserved.
- *  Copyright (c) 2009-2012, Code Aurora Forum. All rights reserved.
+ *  Copyright (c) 2009-2012, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -1370,19 +1370,22 @@ static void msmsdcc_sg_consumed(struct msmsdcc_host *host,
 				unsigned int length)
 {
 	struct msmsdcc_pio_data *pio = &host->pio;
-
-	if (host->curr.data->flags & MMC_DATA_READ) {
-		if (length > pio->sg_miter.consumed)
-			/*
-			 * consumed 4 bytes, but sgl
-			 * describes < 4 bytes
-			 */
-			_msmsdcc_sg_consume_word(host);
-		else
-			pio->sg_miter.consumed = length;
-	} else
-		if (length < pio->sg_miter.consumed)
-			pio->sg_miter.consumed = length;
+	if(host->curr.data != NULL )
+	{
+		if (host->curr.data->flags & MMC_DATA_READ) {
+			if (length > pio->sg_miter.consumed)
+				/*
+				 * consumed 4 bytes, but sgl
+				 * describes < 4 bytes
+				 */
+				_msmsdcc_sg_consume_word(host);
+			else
+				pio->sg_miter.consumed = length;
+		} else
+			if (length < pio->sg_miter.consumed)
+				pio->sg_miter.consumed = length;
+	}else
+		printk(KERN_ERR "%s:host->curr.data is NULL\n",__func__);
 }
 
 static void msmsdcc_sg_start(struct msmsdcc_host *host)
@@ -2571,6 +2574,9 @@ static void msmsdcc_msm_bus_cancel_work_and_set_vote(
 	unsigned int bw;
 	int vote;
 
+	if(host->plat->is_sdio_al_client)
+		return;
+		
 	if (!host->msm_bus_vote.client_handle)
 		return;
 
@@ -5190,6 +5196,7 @@ msmsdcc_runtime_suspend(struct device *dev)
 	}
 
 	pr_debug("%s: %s: start\n", mmc_hostname(mmc), __func__);
+
 	if (mmc) {
 		host->sdcc_suspending = 1;
 		mmc->suspend_task = current;
@@ -5264,6 +5271,7 @@ msmsdcc_runtime_resume(struct device *dev)
 	}
 
 	pr_debug("%s: %s: start\n", mmc_hostname(mmc), __func__);
+
 	if (mmc) {
 		if (mmc->card && mmc_card_sdio(mmc->card) &&
 				mmc_card_keep_power(mmc)) {

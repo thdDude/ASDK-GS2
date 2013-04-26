@@ -1,4 +1,4 @@
-/* Copyright (c) 2010, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2010, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -13,28 +13,14 @@
 #ifndef MSM_GEMINI_COMMON_H
 #define MSM_GEMINI_COMMON_H
 
-#undef MSM_GEMINI_DEBUG
-
+//#define MSM_GEMINI_DEBUG
 #ifdef MSM_GEMINI_DEBUG
-//#define GMN_DBG(fmt, args...) pr_debug(fmt, ##args)
-#define GMN_PR_ERR(fmt, arg...)	\
-		do {\
-		printk(KERN_ERR "[GEMINI] %s:%d:" fmt "\n",__FUNCTION__, __LINE__, ##arg);}\
-		while(0)
-
-#define GMN_DBG(fmt, arg...)	\
-				do {\
-				printk(KERN_ERR "[GEMINI] %s:%d:" fmt "\n",__FUNCTION__, __LINE__, ##arg);}\
-				while(0)
-
+#define GMN_DBG(fmt, args...) pr_debug(fmt, ##args)
 #else
-
-//#define GMN_PR_ERR   pr_err
-
-#define GMN_DBG(fmt, args...)
-#define GMN_PR_ERR(fmt, arg...)	
-
+#define GMN_DBG(fmt, args...) do { } while (0)
 #endif
+
+#define GMN_PR_ERR   pr_err
 
 enum GEMINI_MODE {
 	GEMINI_MODE_DISABLE,

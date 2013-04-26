@@ -80,7 +80,7 @@ enum {
 	ADAPTIVE_T55,
 	SPARE_T56,
 	SPT_GENERICDATA_T57,
-#if defined(CONFIG_KOR_MODEL_SHV_E160S) || defined(CONFIG_KOR_MODEL_SHV_E160K) || defined (CONFIG_KOR_MODEL_SHV_E160L)	 || defined (CONFIG_JPN_MODEL_SC_05D)
+#if defined(CONFIG_KOR_MODEL_SHV_E160S) || defined(CONFIG_KOR_MODEL_SHV_E160K) || defined (CONFIG_KOR_MODEL_SHV_E160L)	
 	SPARE_T58,
 	SPARE_T59,
 	SPARE_T60,
@@ -116,7 +116,7 @@ struct mxt540e_platform_data {
 	void (*power_on)(void);
 	void (*power_off)(void);
 	void (*register_cb)(void*);
-	void (*read_ta_status)(void*);	
+	void (*read_ta_status)(bool *);	
 };
 
 typedef enum

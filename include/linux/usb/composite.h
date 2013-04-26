@@ -373,9 +373,6 @@ struct usb_composite_dev {
 	 */
 	bool                         mute_switch;
 	bool                         force_disconnect;
-	/*Host os check */
-	bool                         host_state_info;
-	bool                         mac_connected;
 #endif
 };
 

@@ -2,7 +2,7 @@
  *
  * Copyright (C) 2008 Google, Inc.
  * Author: Brian Swetland <swetland@google.com>
- * Copyright (c) 2009-2012, Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2009-2012, The Linux Foundation. All rights reserved.
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -185,7 +185,7 @@ struct msm_otg_platform_data {
 	bool enable_dcd;
 	struct msm_bus_scale_pdata *bus_scale_table;
 #ifdef CONFIG_USB_HOST_NOTIFY
-	void (*set_autosw_pba)(void);
+	void (*set_autosw_pba)();
 #endif
 };
 

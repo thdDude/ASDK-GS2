@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2010-2011, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -1989,8 +1989,8 @@ static int read_sdioc_software_header(struct sdio_al_device *sdio_al_dev,
 			ch->state = SDIO_CHANNEL_STATE_INVALID;
 		}
 
-		sdio_al_logi(sdio_al_dev->dev_log, MODULE_NAME ":Channel=%s, "
-				"state=%d\n", ch->name,	ch->state);
+//		sdio_al_logi(sdio_al_dev->dev_log, MODULE_NAME ":Channel=%s, "
+//				"state=%d\n", ch->name,	ch->state);
 	}
 
 	return 0;
@@ -3620,6 +3620,12 @@ static void msm_sdio_al_shutdown(struct platform_device *pdev)
 			continue;
 		}
 		sdio_al_dev = sdio_al->devices[i];
+
+		sdio_al_dev->bootloader_done = 1;
+		wake_up(&sdio_al_dev->wait_mbox);
+
+		sdio_al_logi(&sdio_al->gen_log, MODULE_NAME
+			"set bootloader_done event set...");
 
 		if (sdio_al_claim_mutex_and_verify_dev(sdio_al_dev, __func__))
 			return;

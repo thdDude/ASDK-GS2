@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2010-2011, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -2755,11 +2755,13 @@ static bool timpani_register_is_cacheable(u8 reg)
 	case TIMPANI_A_CDC_ANC2_CTL1:
 	case TIMPANI_A_CDC_ANC2_CTL2:
 	case TIMPANI_A_CDC_ANC2_FF_FB_SHIFT:
+	case TIMPANI_A_AUXPGA_LR_GAIN:
 		return false;
 	default:
 		return true;
 	}
 }
+
 /*
 static int adie_codec_write(u8 reg, u8 mask, u8 val)
 {
@@ -2797,14 +2799,10 @@ static int adie_codec_write(u8 reg, u8 mask, u8 val)
 
 error:
 	return rc;
-}
-
-*/
+}*/
 
 
 /* Qualcomm path begins */
-
-
 static void timpani_codec_bring_up_nocache(void)
 {
 	u8 reg_val;
@@ -2832,7 +2830,6 @@ static void timpani_codec_bring_up_nocache(void)
 
 
 //static u8 timpani_shadow[TIMPANI_ARRAY_SIZE];
-
 static int timpani_flush_cached_values(void)
 {
 	int i, rc;
@@ -2884,58 +2881,60 @@ static int timpani_flush_cached_values(void)
 /* Qualcomm patch ends */
 
 static int adie_codec_write(u8 reg, u8 mask, u8 val)
-{
-	int rc = 0;
-	u8 new_val;
-	new_val = (val & mask) | (timpani_shadow[reg] & ~mask);
-	if (!(timpani_register_is_cacheable(reg) &&
-		(new_val == timpani_shadow[reg]))) {
-
-		/*QC patch for case 00580204 , I2C QTR failure
-	  	  * retry added for adie code write api */
-		rc = marimba_write_bit_mask(adie_codec.pdrv_ptr, reg,
-				&new_val, 1, 0xFF);
-		if ((rc == -ETIMEDOUT) || (rc == -ENOTCONN)) {
-			pr_err("%s: Timpani write error, retrying\n",
-					__func__);
-			rc = marimba_write_bit_mask(adie_codec.pdrv_ptr,
-					reg, &val, 1, mask);
+	{
+		int rc = 0;
+		u8 new_val;
+		new_val = (val & mask) | (timpani_shadow[reg] & ~mask);
+		if (!(timpani_register_is_cacheable(reg) &&
+			(new_val == timpani_shadow[reg]))) {
+	
+			/*QC patch for case 00580204 , I2C QTR failure
+			  * retry added for adie code write api */
+			rc = marimba_write_bit_mask(adie_codec.pdrv_ptr, reg,
+					&new_val, 1, 0xFF);
+			if ((rc == -ETIMEDOUT) || (rc == -ENOTCONN)) {
+				pr_err("%s: Timpani write error, retrying\n",
+						__func__);
+				rc = marimba_write_bit_mask(adie_codec.pdrv_ptr,
+						reg, &val, 1, mask);
+			}
+			/* QTR patch for SR 620229 , QTR I2C NACK
+			 * I2c driver returns ENOTCONN error code under NAK condition.CODEC driver, 
+			 *	upon receiving two ENOTCONN error while attempting toprogram CODEC registers,
+			 *	performs reset on the CODEC. Then, driverflushes down cached register values 
+			 *	to restore state of CODEC.Since CODEC is yanked out,
+			 * undesirable pop noise is to be expected.*/
+			if ((rc == -ENOTCONN)) {
+					pr_err("%s: Timpani failed to respond twice. Reset\n",__func__);
+					timpani_reset();
+					/* Run CODEC software startup sequence again */
+					timpani_codec_bring_up_nocache();
+					/* Flush down cached value */
+					rc = timpani_flush_cached_values();
+					if (IS_ERR_VALUE(rc)) {
+							pr_err("%s: CODEC is not recoverable\n", __func__);
+							rc = -EIO;
+							goto error;
+					}
+					rc = marimba_write_bit_mask(adie_codec.pdrv_ptr, reg,  &new_val,
+									1, 0xFF);
+			}
+			//QC patch for case 00580204 , I2C QTR failure	
+			if (IS_ERR_VALUE(rc)) {
+				pr_err("%s: Timpani write error\n", __func__);
+			
+				goto error;
+			}
+			timpani_shadow[reg] = new_val;
+			pr_debug("%s: write reg %x val %x new value %x\n", __func__,
+				reg, val, new_val);
 		}
-		/* QTR patch for SR 620229 , QTR I2C NACK
-		 * I2c driver returns ENOTCONN error code under NAK condition.CODEC driver, 
-		 *  upon receiving two ENOTCONN error while attempting toprogram CODEC registers,
-		 *  performs reset on the CODEC. Then, driverflushes down cached register values 
-		 *  to restore state of CODEC.Since CODEC is yanked out,
-		 * undesirable pop noise is to be expected.*/
-		if ((rc == -ENOTCONN)) {
-				pr_err("%s: Timpani failed to respond twice. Reset\n",__func__);
-				timpani_reset();
-				/* Run CODEC software startup sequence again */
-				timpani_codec_bring_up_nocache();
-				/* Flush down cached value */
-				rc = timpani_flush_cached_values();
-				if (IS_ERR_VALUE(rc)) {
-						pr_err("%s: CODEC is not recoverable\n", __func__);
-						rc = -EIO;
-						goto error;
-				}
-				rc = marimba_write_bit_mask(adie_codec.pdrv_ptr, reg,  &new_val,
-								1, 0xFF);
-		}
-		//QC patch for case 00580204 , I2C QTR failure	
-		if (IS_ERR_VALUE(rc)) {
-			pr_err("%s: Timpani write error\n", __func__);
-		
-			goto error;
-		}
-		timpani_shadow[reg] = new_val;
-		pr_debug("%s: write reg %x val %x new value %x\n", __func__,
-			reg, val, new_val);
+	
+	error:
+		return rc;
 	}
 
-error:
-	return rc;
-}
+
 
 static int reg_in_use(u8 reg_ref, u8 path_type)
 {
@@ -3003,6 +3002,7 @@ static int adie_codec_read(u8 reg, u8 *val)
 	//QC patch for case 00580204 , I2C QTR failure	
 }
 
+
 static int timpani_adie_codec_setpath(struct adie_codec_path *path_ptr,
 					u32 freq_plan, u32 osr)
 {
@@ -3058,10 +3058,6 @@ static u32 timpani_adie_codec_freq_supported(
 			break;
 		}
 	}
-
-	if (rc != 0)
-		pr_info("%s : rc = %d\n", __func__, rc); /* QC_debug */
-
 	return rc;
 }
 int timpani_adie_codec_enable_sidetone(struct adie_codec_path *rx_path_ptr,

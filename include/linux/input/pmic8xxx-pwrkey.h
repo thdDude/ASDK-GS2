@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2010-2011, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -34,5 +34,5 @@ struct pm8xxx_pwrkey_platform_data  {
 	u32  kpd_trigger_delay_us;
 	u32  wakeup;
 };
-
+extern struct class *sec_class;
 #endif /* __PMIC8XXX_PWRKEY_H__ */

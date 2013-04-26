@@ -128,7 +128,14 @@ int vibe_set_pwm_freq(int nForce)
 	return VIBE_S_SUCCESS;
 }
 
-
+#if defined (CONFIG_KOR_MODEL_SHV_E110S) || \
+        defined (CONFIG_USA_MODEL_SGH_T989) || \
+        defined (CONFIG_USA_MODEL_SGH_I727) || \
+        defined (CONFIG_USA_MODEL_SGH_T769) || \
+        defined (CONFIG_USA_MODEL_SGH_I717) || \
+        defined (CONFIG_USA_MODEL_SGH_I757) || \
+        defined (CONFIG_USA_MODEL_SGH_I577) || \
+        defined (CONFIG_JPN_MODEL_SC_03D)
 static int vib_power_onoff(u8 onoff)
 {
 	int rc;
@@ -179,7 +186,7 @@ static int vib_power_onoff(u8 onoff)
 
 	return 0;
 }
-
+#endif
 int vibtonz_en(bool en)
 {
 	if(en) {
@@ -228,7 +235,15 @@ int vib_isa1200_onoff(u8 onoff)
 		vibrator_write_register(0x34, 0x19);
 		vibrator_write_register(0x35, 0x00);	
 		vibrator_write_register(0x36, 0x00);	
-#elif defined (CONFIG_KOR_SHV_E120L_HD720)|| defined(CONFIG_KOR_MODEL_SHV_E120S) || defined(CONFIG_KOR_MODEL_SHV_E120K) || defined(CONFIG_KOR_MODEL_SHV_E160L) ||  defined (CONFIG_KOR_MODEL_SHV_E120L)
+#elif defined (CONFIG_KOR_SHV_E120L_HD720)|| defined(CONFIG_KOR_MODEL_SHV_E120S) || defined(CONFIG_KOR_MODEL_SHV_E120K) || defined (CONFIG_KOR_MODEL_SHV_E120L)
+		vibrator_write_register(0x30, 0x89);
+		vibrator_write_register(0x31, 0x40);
+		vibrator_write_register(0x32, 0x00);
+		vibrator_write_register(0x33, 0x13);
+		vibrator_write_register(0x34, 0x05);
+		vibrator_write_register(0x35, 0x00);
+		vibrator_write_register(0x36, 0x00);
+#elif defined (CONFIG_KOR_MODEL_SHV_E160L)
 		vibrator_write_register(0x30, 0x89);
 		vibrator_write_register(0x31, 0x40);
 		vibrator_write_register(0x32, 0x00);
@@ -236,7 +251,7 @@ int vib_isa1200_onoff(u8 onoff)
 		vibrator_write_register(0x34, 0x02);
 		vibrator_write_register(0x35, 0x00);
 		vibrator_write_register(0x36, 0x00);
-#elif defined(CONFIG_KOR_MODEL_SHV_E160S) || defined(CONFIG_KOR_MODEL_SHV_E160K)  || defined (CONFIG_JPN_MODEL_SC_05D)
+#elif defined(CONFIG_KOR_MODEL_SHV_E160S) || defined(CONFIG_KOR_MODEL_SHV_E160K) 
 		vibrator_write_register(0x30, 0x89);
 		vibrator_write_register(0x31, 0x40);
 		vibrator_write_register(0x32, 0x00);
@@ -297,8 +312,9 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_AmpDisable(VibeUInt8 nActuatorIndex
 		g_bAmpEnabled = false;
 		vibtonz_pwm(0);
 		vibtonz_en(false);
-
+                #ifndef CONFIG_USA_MODEL_SGH_T989
 		printk("[VIBETONZ] %s \n",__func__);
+		#endif
 #if defined (CONFIG_KOR_MODEL_SHV_E110S)		
 		if (get_hw_rev() > 0x00){
 			vibrator_write_register(0x30, 0x09);			
@@ -308,8 +324,7 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_AmpDisable(VibeUInt8 nActuatorIndex
 			gpio_set_value(VIB_PWM, VIBRATION_OFF);
 			vib_power_onoff(0);		
 		}
-#elif defined (CONFIG_KOR_SHV_E120L_HD720) || defined(CONFIG_KOR_MODEL_SHV_E120K) || defined(CONFIG_KOR_MODEL_SHV_E120S) || defined(CONFIG_KOR_MODEL_SHV_E160S)\
- || defined(CONFIG_KOR_MODEL_SHV_E160K) || defined(CONFIG_KOR_MODEL_SHV_E160L) ||  defined (CONFIG_KOR_MODEL_SHV_E120L) || defined (CONFIG_JPN_MODEL_SC_05D)
+#elif defined (CONFIG_KOR_SHV_E120L_HD720) || defined(CONFIG_KOR_MODEL_SHV_E120K) || defined(CONFIG_KOR_MODEL_SHV_E120S) || defined(CONFIG_KOR_MODEL_SHV_E160S) || defined(CONFIG_KOR_MODEL_SHV_E160K) || defined(CONFIG_KOR_MODEL_SHV_E160L) ||  defined (CONFIG_KOR_MODEL_SHV_E120L)
 		vibrator_write_register(0x30, 0x09);
 #elif defined (CONFIG_USA_MODEL_SGH_T989) || defined (CONFIG_USA_MODEL_SGH_I727) || defined (CONFIG_USA_MODEL_SGH_T769)
 		if (get_hw_rev() > 0x04 ){
@@ -322,6 +337,7 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_AmpDisable(VibeUInt8 nActuatorIndex
 		}
 #elif defined (CONFIG_USA_MODEL_SGH_I717)|| defined(CONFIG_USA_MODEL_SGH_I757) || defined(CONFIG_USA_MODEL_SGH_I577)
 		vibrator_write_register(0x30, 0x09);
+		vib_power_onoff(0);
 
 #elif defined (CONFIG_JPN_MODEL_SC_03D)
 		if (get_hw_rev() > 0x00){
@@ -350,8 +366,10 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_AmpEnable(VibeUInt8 nActuatorIndex)
 {
 
     if (!g_bAmpEnabled)
-    {
+    {   
+        #ifndef CONFIG_USA_MODEL_SGH_T989
     	printk("[VIBETONZ] %s \n",__func__);
+    	#endif
 		
 		vibtonz_en(true);
 		g_bAmpEnabled = true;
@@ -364,8 +382,7 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_AmpEnable(VibeUInt8 nActuatorIndex)
 			vib_power_onoff(1);
 			gpio_set_value(VIB_EN, VIBRATION_ON);			
 		}
-#elif defined (CONFIG_KOR_SHV_E120L_HD720) || defined(CONFIG_KOR_MODEL_SHV_E120K) || defined(CONFIG_KOR_MODEL_SHV_E120S) || defined(CONFIG_KOR_MODEL_SHV_E160S)\
- || defined(CONFIG_KOR_MODEL_SHV_E160K) || defined(CONFIG_KOR_MODEL_SHV_E160L) ||  defined (CONFIG_KOR_MODEL_SHV_E120L) || defined (CONFIG_JPN_MODEL_SC_05D)
+#elif defined (CONFIG_KOR_SHV_E120L_HD720) || defined(CONFIG_KOR_MODEL_SHV_E120K) || defined(CONFIG_KOR_MODEL_SHV_E120S) || defined(CONFIG_KOR_MODEL_SHV_E160S) || defined(CONFIG_KOR_MODEL_SHV_E160K) || defined(CONFIG_KOR_MODEL_SHV_E160L) ||  defined (CONFIG_KOR_MODEL_SHV_E120L)
 		vibrator_write_register(0x30, 0x89);
 #elif defined (CONFIG_USA_MODEL_SGH_T989)|| defined (CONFIG_USA_MODEL_SGH_I727) || defined (CONFIG_USA_MODEL_SGH_T769)
 		if (get_hw_rev() > 0x04 ){
@@ -378,6 +395,7 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_AmpEnable(VibeUInt8 nActuatorIndex)
 #elif defined (CONFIG_USA_MODEL_SGH_I717) || defined(CONFIG_USA_MODEL_SGH_I757) || defined(CONFIG_USA_MODEL_SGH_I577)
 
         vibrator_write_register(0x30, 0x89);
+	vib_power_onoff(1);
         
 #elif defined (CONFIG_JPN_MODEL_SC_03D)
 		if (get_hw_rev() > 0x00){
@@ -403,8 +421,9 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_AmpEnable(VibeUInt8 nActuatorIndex)
 IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_Initialize(void)
 {
 	g_bAmpEnabled = true; 
-
+        #ifndef CONFIG_USA_MODEL_SGH_T989 
 	printk("[VIBETONZ] %s \n",__func__);
+	#endif
 
 
 #if defined (CONFIG_KOR_MODEL_SHV_E110S)		
@@ -412,8 +431,7 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_Initialize(void)
 	gpio_tlmm_config(GPIO_CFG(VIB_PWM,  2, GPIO_CFG_OUTPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA),1);
 	gpio_set_value(VIB_EN, VIBRATION_ON);	
 	}
-#elif defined (CONFIG_KOR_MODEL_SHV_E120L) || defined(CONFIG_KOR_MODEL_SHV_E120K) || defined(CONFIG_KOR_MODEL_SHV_E120S) || defined(CONFIG_KOR_MODEL_SHV_E160S) \
-|| defined(CONFIG_KOR_MODEL_SHV_E160K) || defined(CONFIG_KOR_MODEL_SHV_E160L) || defined (CONFIG_JPN_MODEL_SC_05D)
+#elif defined (CONFIG_KOR_MODEL_SHV_E120L) || defined(CONFIG_KOR_MODEL_SHV_E120K) || defined(CONFIG_KOR_MODEL_SHV_E120S) || defined(CONFIG_KOR_MODEL_SHV_E160S) || defined(CONFIG_KOR_MODEL_SHV_E160K) || defined(CONFIG_KOR_MODEL_SHV_E160L)
 	gpio_tlmm_config(GPIO_CFG(VIB_PWM,  2, GPIO_CFG_OUTPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA),1);
 	gpio_set_value(VIB_EN, VIBRATION_ON);	
 #elif defined (CONFIG_USA_MODEL_SGH_T989)|| defined (CONFIG_USA_MODEL_SGH_I727)|| defined (CONFIG_USA_MODEL_SGH_T769)
@@ -443,7 +461,15 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_Initialize(void)
 		vibrator_write_register(0x35, 0x00);	
 		vibrator_write_register(0x36, 0x00);
 	}
-#elif defined (CONFIG_KOR_SHV_E120L_HD720) || defined(CONFIG_KOR_MODEL_SHV_E120S) || defined(CONFIG_KOR_MODEL_SHV_E120K) || defined(CONFIG_KOR_MODEL_SHV_E160L) ||  defined (CONFIG_KOR_MODEL_SHV_E120L)
+#elif defined (CONFIG_KOR_SHV_E120L_HD720) || defined(CONFIG_KOR_MODEL_SHV_E120S) || defined(CONFIG_KOR_MODEL_SHV_E120K) || defined (CONFIG_KOR_MODEL_SHV_E120L)
+	vibrator_write_register(0x30, 0x09);
+	vibrator_write_register(0x31, 0x40);
+	vibrator_write_register(0x32, 0x00);
+	vibrator_write_register(0x33, 0x13);
+	vibrator_write_register(0x34, 0x05);
+	vibrator_write_register(0x35, 0x00);
+	vibrator_write_register(0x36, 0x00);
+#elif defined (CONFIG_KOR_MODEL_SHV_E160L)
 	vibrator_write_register(0x30, 0x09);
 	vibrator_write_register(0x31, 0x40);
 	vibrator_write_register(0x32, 0x00);
@@ -451,7 +477,7 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_Initialize(void)
 	vibrator_write_register(0x34, 0x02);
 	vibrator_write_register(0x35, 0x00);
 	vibrator_write_register(0x36, 0x00);
-#elif defined(CONFIG_KOR_MODEL_SHV_E160S) || defined(CONFIG_KOR_MODEL_SHV_E160K)  || defined (CONFIG_JPN_MODEL_SC_05D)
+#elif defined(CONFIG_KOR_MODEL_SHV_E160S) || defined(CONFIG_KOR_MODEL_SHV_E160K) 
 	vibrator_write_register(0x30, 0x09);
 	vibrator_write_register(0x31, 0x40);
 	vibrator_write_register(0x32, 0x00);
@@ -534,6 +560,7 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_Terminate(void)
 /*
 ** Called by the real-time loop to set PWM duty cycle
 */
+/*
 IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_Set(VibeUInt8 nActuatorIndex, VibeInt8 nForce)
 {
 	int pwm_duty=freq_count/2 + ((freq_count/2 - 2) * nForce)/127;
@@ -561,6 +588,7 @@ IMMVIBESPIAPI VibeStatus ImmVibeSPI_ForceOut_Set(VibeUInt8 nActuatorIndex, VibeI
 
 	return VIBE_S_SUCCESS;
 }
+*/
 
 /*
 ** Called by the real-time loop to set force output, and enable amp if required

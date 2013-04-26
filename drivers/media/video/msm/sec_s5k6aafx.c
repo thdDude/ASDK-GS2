@@ -51,7 +51,6 @@ struct test {
 static struct test *testBuf;
 static s32 large_file;
 
-
 #define TEST_INIT	\
 {			\
 	.data = 0;	\
@@ -73,7 +72,7 @@ static unsigned int config_csi2;
 static struct s5k6aafx_ctrl_t *s5k6aafx_ctrl;
 
 static DECLARE_WAIT_QUEUE_HEAD(s5k6aafx_wait_queue);
-DECLARE_MUTEX(s5k6aafx_sem);
+//DECLARE_MUTEX(s5k6aafx_sem);
 
 #ifdef CONFIG_LOAD_FILE
 static int s5k6aafx_write_regs_from_sd(char *name);
@@ -195,15 +194,10 @@ static int s5k6aafx_i2c_write_burst_list(const u32 *list, int size, char *name)
 	int len = 0;
 	u8 buf[BURST_MODE_BUFFER_MAX_SIZE] = {0,};
 
-	cam_info("%s, size=%d",name, size);
+    struct i2c_msg msg = {s5k6aafx_client->addr, 0, 4, buf};
 
+	CAM_DEBUG("%s, size=%d",name, size);
 
-	struct i2c_msg msg = {
-		.addr = s5k6aafx_client->addr,
-		.flags = 0,
-		.len = 4,
-		.buf = buf,
-	};
 
 	while (size--) {
 		temp = *list++;
@@ -600,10 +594,10 @@ static void s5k6aafx_get_exif(void)
 	/* get shutter speed(exposure time) for exif */
 	s5k6aafx_i2c_write_32bit(s5k6aafx_client->addr, 0x002C7000);
 	s5k6aafx_i2c_write_32bit(s5k6aafx_client->addr, 0x002E1508);
-	s5k6aafx_i2c_read(0x0F12, shutter_data0);
+	s5k6aafx_i2c_read(0x0F12, (unsigned short*)shutter_data0);
 	s5k6aafx_i2c_write_32bit(s5k6aafx_client->addr, 0x002C7000);
 	s5k6aafx_i2c_write_32bit(s5k6aafx_client->addr, 0x002E150A);
-	s5k6aafx_i2c_read(0x0F12, shutter_data1);
+	s5k6aafx_i2c_read(0x0F12, (unsigned short*)shutter_data1);
 
 	shutter_for_exif = ((shutter_data1[1] << 24)|(shutter_data1[0] << 16)|(shutter_data0[1] << 8)|(shutter_data0[0]));
 
@@ -613,7 +607,7 @@ static void s5k6aafx_get_exif(void)
 	/* get ISO for exif */
 	s5k6aafx_i2c_write_32bit(s5k6aafx_client->addr, 0x002C7000);
 	s5k6aafx_i2c_write_32bit(s5k6aafx_client->addr, 0x002E1508);
-	s5k6aafx_i2c_read(0x0F12, iso_data);
+	s5k6aafx_i2c_read(0x0F12, (unsigned short*)iso_data);
 	iso_exif = ((iso_data[1] << 8)|(iso_data[0]));
 
 	sprintf(str_iso_value, "%d", iso_exif);
@@ -1136,6 +1130,7 @@ int s5k6aafx_sensor_ext_config(void __user *argp)
 {
 	sensor_ext_cfg_data cfg_data;
 	int rc = 0;
+    printk("s5k6aafx_sensor_ext_config");
 
 	if (!s5k6aafx_ctrl)
 		return -ENOSYS;
@@ -1146,7 +1141,7 @@ int s5k6aafx_sensor_ext_config(void __user *argp)
 		return -EFAULT;
 	}
 
-	cam_info("cmd = %d , param1 = %d",cfg_data.cmd,cfg_data.value_1);
+	CAM_DEBUG("cmd = %d , param1 = %d",cfg_data.cmd,cfg_data.value_1);
 	if( (cfg_data.cmd != EXT_CFG_SET_DTP)
 		&& (cfg_data.cmd != EXT_CFG_SET_VT_MODE)
 		&& (cfg_data.cmd != EXT_CFG_SET_MOVIE_MODE)

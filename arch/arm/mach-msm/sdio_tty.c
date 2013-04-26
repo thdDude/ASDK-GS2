@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -820,7 +820,7 @@ static int __init sdio_tty_init(void)
 		if (sdio_tty_debug_root) {
 			sdio_tty_debug_info = debugfs_create_file(
 							"sdio_tty_debug",
-							S_IRUGO | S_IWUGO,
+							S_IRUGO | S_IWUSR | S_IWGRP,
 							sdio_tty_debug_root,
 							NULL,
 							&tty_debug_info_ops);

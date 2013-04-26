@@ -86,7 +86,7 @@ static unsigned char anycall_progress_bar_center[] =
 	0x2E, 0xB1, 0xDB, 0x00, 0x2E, 0xB1, 0xDB, 0x00, 0x33, 0x33, 0x33, 0x00, 0x33, 0x33, 0x33, 0x00
 };
 
-static unsigned char anycall_progress_bar[] =
+static unsigned char anycall_progress_bar[] = 
 {
 	0x33, 0x33, 0x33, 0x00, 0x33, 0x33, 0x33, 0x00, 0x33, 0x33, 0x33, 0x00, 0x33, 0x33, 0x33, 0x00,
 	0x33, 0x33, 0x33, 0x00, 0x33, 0x33, 0x33, 0x00, 0x33, 0x33, 0x33, 0x00, 0x33, 0x33, 0x33, 0x00,
@@ -136,7 +136,7 @@ int load_565rle_image(char *filename, bool bf_supported)
 	unsigned count, max;
 	unsigned short *data, *bits, *ptr;
 	struct fb_info *info;
-#if 0
+#ifndef CONFIG_FRAMEBUFFER_CONSOLE 
 	struct module *owner; 
 #endif 	
 	info = registered_fb[0];
@@ -146,13 +146,13 @@ int load_565rle_image(char *filename, bool bf_supported)
 			__func__);
 		return -ENODEV;
 	}
-#if 0
+#ifndef CONFIG_FRAMEBUFFER_CONSOLE 
 	owner = info->fbops->owner; 
 	if (!try_module_get(owner)) 
-		return NULL; 
+		return 0; 
 	if (info->fbops->fb_open && info->fbops->fb_open(info, 0)) { 
 		module_put(owner); 
-		return NULL; 
+		return 0; 
 	}
 #endif
 	fd = sys_open(filename, O_RDONLY, 0);
@@ -197,11 +197,12 @@ printk("%s: max %d, n %d 0x%x\n",__func__, max, ptr[0], (unsigned int)bits);
 		ptr += 2;
 		count -= 4;
 	}
+#ifdef CONFIG_SEC_DEBUG
 #if !defined (CONFIG_USA_OPERATOR_ATT) && !defined (CONFIG_JPN_MODEL_SC_03D) && !defined (CONFIG_CAN_OPERATOR_RWC)
 	if (!is_lpcharging_state() && !sec_debug_is_recovery_mode())
 		s3cfb_start_progress(info);
 #endif
-
+#endif
 err_logo_free_data:
 	kfree(data);
 err_logo_close_file:
@@ -418,7 +419,7 @@ static void progress_timer_handler(unsigned long data)
 			PROGRESS_BAR_START_Y,
 			(void*)anycall_progress_bar_right,		
 			PROGRESS_BAR_WIDTH,
-			PROGRESS_BAR_HEIGHT);
+			PROGRESS_BAR_HEIGHT);    
 		
 			progress_timer.expires = (get_jiffies_64() + (HZ/14));         
 			progress_timer.function = progress_timer_handler;         

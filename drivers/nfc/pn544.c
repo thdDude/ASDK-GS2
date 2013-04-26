@@ -235,7 +235,7 @@ static int pn544_dev_open(struct inode *inode, struct file *filp)
 	return 0;
 }
 
-static int pn544_dev_ioctl(struct file *filp,
+static long pn544_dev_ioctl(struct file *filp,
 		unsigned int cmd, unsigned long arg)
 {
 	struct pn544_dev *pn544_dev = filp->private_data;
@@ -378,7 +378,7 @@ static int pn544_probe(struct i2c_client *client,
 		goto err_request_irq_failed;
 	}
 	pn544_disable_irq(pn544_dev);
-#if defined(CONFIG_TARGET_LOCALE_KOR) || defined(CONFIG_EUR_MODEL_GT_I9210) || defined(CONFIG_TARGET_LOCALE_JPN) 
+#if defined(CONFIG_TARGET_LOCALE_KOR) || defined(CONFIG_EUR_MODEL_GT_I9210)
 	enable_irq_wake(client->irq);	
 #endif	
 	i2c_set_clientdata(client, pn544_dev);

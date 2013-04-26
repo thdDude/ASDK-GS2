@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2012, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2010-2012, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -146,7 +146,7 @@ int msm_set_copp_id(int session_id, int copp_id)
 		return -EINVAL;
 
 	index = afe_get_port_index(copp_id);
-	if (index < 0 || index > AFE_MAX_PORTS-1)
+	if (index < 0 || index > AFE_MAX_PORTS)
 		return -EINVAL;
 	pr_debug("%s: session[%d] copp_id[%d] index[%d]\n", __func__,
 			session_id, copp_id, index);
@@ -1256,7 +1256,6 @@ static long audio_dev_ctrl_ioctl(struct file *file,
 		break;
 
 	}
-
 #if defined(CONFIG_EUR_MODEL_GT_I9210)
 	case AUDIO_SET_AMR_WB:
 			if(copy_from_user(&amr_state, argp, sizeof(amr_state)))
@@ -1272,7 +1271,6 @@ static long audio_dev_ctrl_ioctl(struct file *file,
 				printk("%s: AUDIO_SET_AMR_WB %d error %d\n", __func__, amr_state, rc);
 		break;
 #endif
-
 	case AUDIO_DISABLE_SND_DEVICE: {
 		struct msm_snddev_info *dev_info;
 		u32 dev_id;

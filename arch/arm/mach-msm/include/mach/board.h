@@ -1,7 +1,7 @@
 /* arch/arm/mach-msm/include/mach/board.h
  *
  * Copyright (C) 2007 Google, Inc.
- * Copyright (c) 2008-2012, Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2008-2012, The Linux Foundation. All rights reserved.
  * Author: Brian Swetland <swetland@google.com>
  *
  * This software is licensed under the terms of the GNU General Public
@@ -213,7 +213,7 @@ struct msm_camera_sensor_platform_info {
 	int num_vreg;
 	int32_t (*ext_power_ctrl) (int enable);
 	struct msm_camera_gpio_conf *gpio_conf;
-	void(*sensor_power_control) (int);	
+	int(*sensor_power_control) (int);	
 };
 
 struct msm_actuator_info {
@@ -426,7 +426,6 @@ struct msm_hdmi_platform_data {
 	int (*gpio_config)(int on);
 	int (*init_irq)(void);
 	bool (*check_hdcp_hw_support)(void);
-	int gpio;
 	int bootup_ck;
 };
 
@@ -470,7 +469,6 @@ struct isp1763_platform_data {
 	int (*setup_gpio)(int enable);
 };
 #endif
-
 /* common init routines for use by arch/arm/mach-msm/board-*.c */
 
 #ifdef CONFIG_OF_DEVICE

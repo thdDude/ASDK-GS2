@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2012, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -61,6 +61,12 @@ static unsigned long msm_ion_get_base(unsigned long size, int memory_type,
 		return allocate_contiguous_memory_nomap(size, MEMTYPE_SMI,
 							align);
 		break;
+#ifdef CONFIG_SEC_KERNEL_REBASE_FOR_PMEM_OPTIMIZATION
+	case ION_ADSP_TYPE:
+		return allocate_contiguous_memory_nomap(size, MEMTYPE_PMEM_ADSP,
+							align);
+		break;
+#endif
 	default:
 		pr_err("%s: Unknown memory type %d\n", __func__, memory_type);
 		return 0;

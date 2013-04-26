@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2010-2011, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -22,13 +22,9 @@
 #define MSM_SSBI1_I2C_BUS_ID     6
 #define MSM_SSBI2_I2C_BUS_ID     7
 #define MSM_SSBI3_I2C_BUS_ID     8
-#if 1//defined(CONFIG_KOR_MODEL_SHV_E110S)
-#define MSM_AMP_I2C_BUS_ID        9
-#define MSM_OPT_I2C_BUS_ID		10
-#define MSM_GYRO_I2C_BUS_ID		11
-#define MSM_MAG_I2C_BUS_ID		12
-#define MSM_TKEY_I2C_BUS_ID		13
-#endif
+#define MSM_AMP_I2C_BUS_ID       9 
+#define MSM_TKEY_I2C_BUS_ID      13
+#define MSM_MOTOR_I2C_BUS_ID 	 17
 
 #if defined(CONFIG_PN544_NFC)
 #define MSM_GSBI10_QUP_I2C_BUS_ID		14

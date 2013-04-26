@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2010-2011, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -306,6 +306,8 @@ int sdio_cmux_open(const int id,
 	logical_ch[id].receive_cb = receive_cb;
 	logical_ch[id].write_done = write_done;
 	logical_ch[id].status_callback = status_callback;
+	smp_mb();
+
 	if (logical_ch[id].receive_cb) {
 		mutex_lock(&temp_rx_lock);
 		list_for_each_entry_safe(list_elem, list_elem_tmp,
@@ -532,6 +534,11 @@ static int process_cmux_pkt(void *pkt, int size)
 
 	D_DUMP_BUFFER("process_cmux_pkt:", size, dump_buf);
 	mux_hdr = (struct sdio_cmux_hdr *)pkt;
+	if (mux_hdr->lc_id >= SDIO_CMUX_NUM_CHANNELS) {
+		pr_err("%s: Invalid CMUX lc_id: %d\n",
+			__func__, mux_hdr->lc_id);
+		return -EINVAL;
+	}	
 	switch (mux_hdr->cmd) {
 	case OPEN:
 		id = (uint32_t)(mux_hdr->lc_id);

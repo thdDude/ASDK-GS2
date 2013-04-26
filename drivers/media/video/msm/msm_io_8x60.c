@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2012, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2010-2012, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -24,7 +24,6 @@
 #include <mach/msm_bus.h>
 #include <mach/msm_bus_board.h>
 
-#include <linux/kernel.h>
 
 /* MIPI	CSI	controller registers */
 #define	MIPI_PHY_CONTROL			0x00000000
@@ -478,11 +477,6 @@ static irqreturn_t msm_io_csi_irq(int irq_num, void *data)
 	CDBG("%s MIPI_INTERRUPT_STATUS = 0x%x\n", __func__, irq);
 	if (csibase != NULL)
 		msm_io_w(irq, csibase + MIPI_INTERRUPT_STATUS);
-#if 0 //=> Add from 
-		//bits 23:8 indicate word count 
-		irq = msm_io_r(csibase + 0x00000010); 
-		CDBG("%s MIPI_PROTOCOL_STATUS = 0x%x\n", __func__, irq); 
-#endif //=> Adde to 
 	return IRQ_HANDLED;
 }
 
@@ -708,9 +702,12 @@ int msm_camio_sensor_clk_on(struct platform_device *pdev)
 	rc = camdev->camera_gpio_on();
 	if (rc < 0)
 		return rc;
-#if defined (CONFIG_SENSOR_M5MO)
+#if !defined (CONFIG_SENSOR_ISX012)
 	// ldo on
-	sinfo->sensor_platform_info->sensor_power_control(1); //on
+	if (sinfo->sensor_platform_info->sensor_power_control(1)) {
+		pr_info("power on ldo fail\n");
+		
+	}
 
 	//  MCLK
 	rc = msm_camio_clk_enable(CAMIO_CAM_MCLK_CLK);  //MCLK ON
@@ -729,6 +726,7 @@ int msm_camio_sensor_clk_on(struct platform_device *pdev)
 		gpio_set_value_cansleep(sinfo->sensor_platform_info->sensor_reset, 1);
 		msleep(5);
 	}
+	pr_info("%s : X\n", __func__);
 	return rc;
 
 #else
@@ -736,16 +734,19 @@ int msm_camio_sensor_clk_on(struct platform_device *pdev)
 #endif
 }
 
+
 int msm_camio_sensor_clk_off(struct platform_device *pdev)
 {
 	struct msm_camera_sensor_info *sinfo = pdev->dev.platform_data;
 	struct msm_camera_device_platform_data *camdev = sinfo->pdata;
 	unsigned int mclk_cfg;
+#if !defined (CONFIG_SENSOR_ISX012)
 	int rc = 0;
+#endif
 
 	pr_info("%s\n", __func__);
 
-#if defined (CONFIG_SENSOR_M5MO)
+#if !defined (CONFIG_SENSOR_ISX012)
 	//reset low
 	if (sinfo->sensor_platform_info->sensor_reset) {
 		gpio_set_value_cansleep(sinfo->sensor_platform_info->sensor_reset, 0);
@@ -757,11 +758,15 @@ int msm_camio_sensor_clk_off(struct platform_device *pdev)
 	gpio_tlmm_config(mclk_cfg, GPIO_CFG_ENABLE);	
 
 	// ldo off
-	sinfo->sensor_platform_info->sensor_power_control(0);
+	if (sinfo->sensor_platform_info->sensor_power_control(0)){
+		pr_info("power off ldo fail\n");
+		// false routine
+	}
 	
 	msm_camera_vreg_disable();
 	camdev->camera_gpio_off();
 	rc = msm_camio_clk_disable(CAMIO_CAM_MCLK_CLK);
+	pr_info("%s : X\n", __func__);
 	return rc;
 
 #else
@@ -787,7 +792,7 @@ void msm_camio_sensor_reset(struct msm_camera_sensor_info *sinfo)
 	if (sinfo->sensor_platform_info->sensor_reset) {
 		gpio_set_value_cansleep(sinfo->sensor_platform_info->sensor_reset, 0);
 		msleep(3);
-	}
+}
 
 	// Disable MCLK 
 	mclk_cfg = GPIO_CFG(32, 0, GPIO_CFG_OUTPUT, GPIO_CFG_PULL_UP, GPIO_CFG_2MA);
@@ -795,14 +800,21 @@ void msm_camio_sensor_reset(struct msm_camera_sensor_info *sinfo)
 	msleep(1);
 
 	// ldo off
-	sinfo->sensor_platform_info->sensor_power_control(0);
+	if (sinfo->sensor_platform_info->sensor_power_control(0)){
+		pr_info("power off ldo fail\n");
+		// false routine
+	}
+	
 	msleep(3);
 	
 //power on
 	//ldo on
-	sinfo->sensor_platform_info->sensor_power_control(1); //on
-	msleep(1);
+	if (sinfo->sensor_platform_info->sensor_power_control(1)) {
+		pr_info("power on ldo fail\n");
+		// false routine
+	}
 	
+	msleep(1);
 	//mclk on
 	mclk_cfg = GPIO_CFG(32, 1, GPIO_CFG_OUTPUT, GPIO_CFG_PULL_UP, GPIO_CFG_2MA);
 	gpio_tlmm_config(mclk_cfg, GPIO_CFG_ENABLE);	
@@ -853,7 +865,7 @@ int msm_camio_csi_config(struct msm_camera_csi_params *csi_params)
 	uint32_t val = 0;
 	int i;
 
-	CDBG("msm_camio_csi_config\n");
+	pr_err("msm_camio_csi_config : E\n");
 	if (csibase != NULL) {
 		/* SOT_ECC_EN enable error correction for SYNC (data-lane) */
 		msm_io_w(0x4, csibase + MIPI_PHY_CONTROL);
@@ -870,7 +882,7 @@ int msm_camio_csi_config(struct msm_camera_csi_params *csi_params)
 			MIPI_PROTOCOL_CONTROL_DATA_FORMAT_SHFT;
 		val |= csi_params->dpcm_scheme <<
 			MIPI_PROTOCOL_CONTROL_DPCM_SCHEME_SHFT;
-		CDBG("%s MIPI_PROTOCOL_CONTROL val=0x%x\n", __func__, val);
+		pr_err("%s MIPI_PROTOCOL_CONTROL val=0x%x\n", __func__, val);
 		msm_io_w(val, csibase + MIPI_PROTOCOL_CONTROL);
 
 		/* settle_cnt is very sensitive to speed!
@@ -880,13 +892,13 @@ int msm_camio_csi_config(struct msm_camera_csi_params *csi_params)
 			(0x0F << MIPI_PHY_D0_CONTROL2_HS_TERM_IMP_SHFT) |
 			(0x1 << MIPI_PHY_D0_CONTROL2_LP_REC_EN_SHFT) |
 			(0x1 << MIPI_PHY_D0_CONTROL2_ERR_SOT_HS_EN_SHFT);
-		CDBG("%s MIPI_PHY_D0_CONTROL2 val=0x%x\n", __func__, val);
+		pr_err("%s MIPI_PHY_D0_CONTROL2 val=0x%x\n", __func__, val);
 		for (i = 0; i < csi_params->lane_cnt; i++)
 			msm_io_w(val, csibase + MIPI_PHY_D0_CONTROL2 + i * 4);
 
 		val = (0x0F << MIPI_PHY_CL_CONTROL_HS_TERM_IMP_SHFT) |
 			(0x1 << MIPI_PHY_CL_CONTROL_LP_REC_EN_SHFT);
-		CDBG("%s MIPI_PHY_CL_CONTROL val=0x%x\n", __func__, val);
+		pr_err("%s MIPI_PHY_CL_CONTROL val=0x%x\n", __func__, val);
 		msm_io_w(val, csibase + MIPI_PHY_CL_CONTROL);
 
 		val = 0 << MIPI_PHY_D0_CONTROL_HS_REC_EQ_SHFT;
@@ -895,7 +907,7 @@ int msm_camio_csi_config(struct msm_camera_csi_params *csi_params)
 		val =
 		(0x1 << MIPI_PHY_D1_CONTROL_MIPI_CLK_PHY_SHUTDOWNB_SHFT)
 		|(0x1 << MIPI_PHY_D1_CONTROL_MIPI_DATA_PHY_SHUTDOWNB_SHFT);
-		CDBG("%s MIPI_PHY_D1_CONTROL val=0x%x\n", __func__, val);
+		pr_err("%s MIPI_PHY_D1_CONTROL val=0x%x\n", __func__, val);
 		msm_io_w(val, csibase + MIPI_PHY_D1_CONTROL);
 
 		msm_io_w(0x00000000, csibase + MIPI_PHY_D2_CONTROL);
@@ -927,9 +939,9 @@ int msm_camio_csi_config(struct msm_camera_csi_params *csi_params)
 		/*clear IRQ bits*/
 		msm_io_w(0xF017F3C0, csibase + MIPI_INTERRUPT_STATUS);
 	} else {
-		pr_info("CSIBASE is NULL");
+		pr_err("CSIBASE is NULL");
 	}
-
+	pr_err("msm_camio_csi_config : X\n");
 	return rc;
 }
 

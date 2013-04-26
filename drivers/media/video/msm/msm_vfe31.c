@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2012, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2010-2012, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -3066,7 +3066,7 @@ static void vfe31_process_output_path_irq_0(uint32_t ping_pong)
 				p2_addr);
 	} else {
 		vfe31_ctrl->outpath.out0.frame_drop_cnt++;
-		pr_warning("path_irq_0 - no free buffer!\n");
+		pr_warning("!@path_irq_0 - no free buffer!\n");
 #ifdef CONFIG_MSM_CAMERA_V4L2
 		pr_info("Swapping ping and pong\n");
 

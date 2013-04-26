@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2010-2011, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -42,11 +42,9 @@ struct xoadc_conv_state {
 #define CHANNEL_INTERNAL_2	0Xe
 #define CHANNEL_MUXOFF		0xf
 
-#define XOADC_MPP_2		0x1
 #define XOADC_MPP_3		0x2
 #define XOADC_MPP_4             0X3
 #define XOADC_MPP_5             0x4
-#define XOADC_MPP_6             0x5
 #define XOADC_MPP_7             0x6
 #define XOADC_MPP_8             0x7
 #define XOADC_MPP_10		0X9
@@ -89,7 +87,6 @@ int32_t pm8058_xoadc_registered(void);
 int32_t pm8058_xoadc_calib_device(uint32_t adc_instance);
 
 int32_t pm8058_xoadc_clear_recentQ(void *h);
-
 #else
 
 static inline int32_t pm8058_xoadc_read_adc_code(uint32_t adc_instance,

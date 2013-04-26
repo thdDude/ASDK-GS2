@@ -65,7 +65,7 @@ short CodTblY_LLeft_48[] = {
 
 
 
-#if defined(CONFIG_KOR_MODEL_SHV_E160S) || defined(CONFIG_KOR_MODEL_SHV_E160K) || defined(CONFIG_KOR_MODEL_SHV_E160L) || defined (CONFIG_JPN_MODEL_SC_05D)
+#if defined(CONFIG_KOR_MODEL_SHV_E160S) || defined(CONFIG_KOR_MODEL_SHV_E160K) || defined(CONFIG_KOR_MODEL_SHV_E160L)
 const short CodTblX_CCW_LLeft_44[] = {
 #include "wacom_i2c_coordX_CCW_LLeft_44_KOR.h"
 };
@@ -161,21 +161,21 @@ const short CodTblY_PRight_44[] = {
 
 
 /* Distance Offset Table */
-short *tableX[MAX_HAND][MAX_ROTATION]= {{CodTblX_PLeft_44, CodTblX_CCW_LLeft_44, CodTblX_PRight_44, CodTblX_CW_LRight_44},
+const short *tableX[MAX_HAND][MAX_ROTATION]= {{CodTblX_PLeft_44, CodTblX_CCW_LLeft_44, CodTblX_PRight_44, CodTblX_CW_LRight_44},
 										{CodTblX_PRight_44, CodTblX_PLeft_44, CodTblX_CW_LRight_44, CodTblX_CCW_LLeft_44}};
 
-short *tableY[MAX_HAND][MAX_ROTATION]= {{CodTblY_PLeft_44, CodTblY_CCW_LLeft_44, CodTblY_PRight_44, CodTblY_CW_LRight_44},
+const short *tableY[MAX_HAND][MAX_ROTATION]= {{CodTblY_PLeft_44, CodTblY_CCW_LLeft_44, CodTblY_PRight_44, CodTblY_CW_LRight_44},
 										{CodTblY_PRight_44, CodTblY_PLeft_44, CodTblY_CW_LRight_44, CodTblY_CCW_LLeft_44}};
 
-short *tableX_48[MAX_HAND][MAX_ROTATION]= {{CodTblX_PLeft_48, CodTblX_LLeft_48, CodTblX_LLeft2_48, 0},
+const short *tableX_48[MAX_HAND][MAX_ROTATION]= {{CodTblX_PLeft_48, CodTblX_LLeft_48, CodTblX_LLeft2_48, 0},
 										{CodTblX_PRight_48, CodTblX_LRight_48, CodTblX_LRight2_48, 0}};
-short *tableY_48[MAX_HAND][MAX_ROTATION]={{CodTblY_PLeft_48, CodTblY_LLeft_48, CodTblY_LLeft2_48, 0},
+const short *tableY_48[MAX_HAND][MAX_ROTATION]={{CodTblY_PLeft_48, CodTblY_LLeft_48, CodTblY_LLeft2_48, 0},
 										{CodTblY_PRight_48, CodTblY_LRight_48, CodTblY_LRight2_48, 0}};
 
 /* Tilt offset */
 /* 0: Left, 1: Right */
 /* 0: Portrait 0, 1: Landscape 90, 2: Landscape 270 */
-#if defined(CONFIG_KOR_MODEL_SHV_E160S) || defined(CONFIG_KOR_MODEL_SHV_E160K) || defined(CONFIG_KOR_MODEL_SHV_E160L) || defined (CONFIG_JPN_MODEL_SC_05D)
+#if defined(CONFIG_KOR_MODEL_SHV_E160S) || defined(CONFIG_KOR_MODEL_SHV_E160K) || defined(CONFIG_KOR_MODEL_SHV_E160L)
 //short tilt_offsetX[MAX_HAND][MAX_ROTATION]= {{120, 110, -110, -100},{-120, 120, -130, 100}};
 //short tilt_offsetY[MAX_HAND][MAX_ROTATION]={{-160, 110, -150, 100},{-130, -160, 70, 100}};
 //short tilt_offsetX[MAX_HAND][MAX_ROTATION]= {{120, 110, -110, -100},{-70, 120, -130, 100}};

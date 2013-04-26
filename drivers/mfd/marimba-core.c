@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2009-2011, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -200,7 +200,6 @@ int marimba_write_bit_mask(struct marimba *marimba, u8 reg, u8 *value,
 	}
 
 	mutex_unlock(&marimba->xfer_lock);
-
 	return ret;
 }
 EXPORT_SYMBOL(marimba_write_bit_mask);
@@ -912,7 +911,6 @@ static int __devexit marimba_remove(struct i2c_client *client)
 }
 
 static struct i2c_device_id marimba_id_table[] = {
-//rohbt_temp	{"marimba", MARIMBA_ID},
 	{"timpani", TIMPANI_ID},
 	{}
 };

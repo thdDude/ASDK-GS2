@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2012, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2009-2012, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -165,14 +165,6 @@ struct msm_otg {
 	struct wake_lock wlock_host;
 	struct host_notify_dev ndev;
 	struct delayed_work late_power_work;
-	struct work_struct notify_work;
-	unsigned notify_state;
-	u8      otg_control;
-	struct timer_list sm_work_timer;
-#endif
-#ifdef CONFIG_30PIN_CONN
-	int accessory_irq;
-	int accessory_irq_gpio;
 #endif
 };
 

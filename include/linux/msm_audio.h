@@ -1,7 +1,7 @@
 /* include/linux/msm_audio.h
  *
  * Copyright (C) 2008 Google, Inc.
- * Copyright (c) 2012 Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2012 The Linux Foundation. All rights reserved.
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -103,6 +103,14 @@ enum A2220_BandType{
 #define AUDIO_REGISTER_ION _IOW(AUDIO_IOCTL_MAGIC, 97, unsigned)
 #define AUDIO_DEREGISTER_ION _IOW(AUDIO_IOCTL_MAGIC, 98, unsigned)
 
+#if defined(CONFIG_EUR_MODEL_GT_I9210)
+#define AUDIO_SET_AMR_WB	_IOW(AUDIO_IOCTL_MAGIC, 99, int)
+
+enum A2220_BandType{
+	VPCM_PATH_NARROWBAND = 0x0,
+	VPCM_PATH_WIDEBAND
+};
+#endif
 #define	AUDIO_MAX_COMMON_IOCTL_NUM	100
 
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2011, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -58,7 +58,7 @@ struct pm8xxx_gpio_platform_data {
 #define	PM_GPIO_VIN_L4			4
 #define	PM_GPIO_VIN_L3			5
 #define	PM_GPIO_VIN_L17			6
-#define	PM_GPIO_VIN_L5			6
+#define PM_GPIO_VIN_L5                  6
 
 /* vin_sel: Voltage Input select on PM8058 */
 #define PM8058_GPIO_VIN_VPH		0

@@ -1,7 +1,7 @@
 /* linux/include/mach/hsusb.h
  *
  * Copyright (C) 2008 Google, Inc.
- * Copyright (c) 2009-2012, Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2009-2012, The Linux Foundation. All rights reserved.
  * Author: Brian Swetland <swetland@google.com>
  *
  * This software is licensed under the terms of the GNU General Public
@@ -119,7 +119,7 @@ struct msm_hsusb_gadget_platform_data {
 	int *phy_init_seq;
 	void (*phy_reset)(void);
 #ifdef CONFIG_USB_SWITCH_FSA9480
-	void (*check_microusb)(void); // Add for fsa9485 device check (Samsung)
+		void (*check_microusb)(void); // Add for fsa9485 device check (Samsung)
 #endif
 	int self_powered;
 	int is_phy_status_timer_on;
@@ -174,13 +174,6 @@ struct msm_otg_platform_data {
 	int  (*chg_init)(int init);
 	int (*config_vddcx)(int high);
 	int (*init_vddcx)(int init);
-#ifdef CONFIG_30PIN_CONN
-	int (*accessory_irq)(void);
-	int (*accessory_irq_gpio)(void);
-#endif
-#ifdef CONFIG_USB_HOST_NOTIFY
-	void (*set_autosw_pba)(void);
-#endif
 
 	struct pm_qos_request_list pm_qos_req_dma;
 };
@@ -194,9 +187,6 @@ struct msm_usb_host_platform_data {
 	struct clk *ebi1_clk;
 #ifdef CONFIG_USB_HOST_NOTIFY
 	int host_notify;
-#endif
-#ifdef CONFIG_USB_SEC_WHITELIST
-	int sec_whlist_table_num;
 #endif
 };
 
